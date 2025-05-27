@@ -3,7 +3,7 @@ import { Restaurant } from "../models/restaurant.model";
 import { Multer } from "multer";
 import uploadImageOnCloudinary from "../utils/imageUpload";
 import { Order } from "../models/order.model";
-import { User } from "../models/user.model";
+import { IUser, User } from "../models/user.model";
 
 export const createRestaurant = async (req: Request, res: Response) => {
     try {
@@ -214,3 +214,29 @@ export const blockAccount = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const getAllRestaurants = async (req: Request, res: Response) => {
+    try {
+        const restaurants = await Restaurant.find().populate<{ user: IUser }>('user');
+
+        // Filtering out restaurants whose users are either missing or blocked
+        const filteredRestaurants = restaurants.filter(
+            (restaurant) => restaurant.user && restaurant.user.currentStatus !== "blocked"
+        );
+
+        if (filteredRestaurants.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No restaurants found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: filteredRestaurants
+        });
+    } catch (error) {
+        console.error("Error fetching restaurants:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
