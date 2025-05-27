@@ -6,6 +6,7 @@ import cloudinary from "../utils/cloudinary";
 import { generateVerificationCode } from "../utils/generateVerificationCode";
 import { generateToken } from "../utils/generateToken";
 import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/email";
+import { isRestarantOwner } from "../utils/isRestaruantOwner";
 
 export const signup = async (req: Request, res: Response) => {
     try {
@@ -26,6 +27,7 @@ export const signup = async (req: Request, res: Response) => {
             email,
             password: hashedPassword,
             contact: Number(contact),
+            role: isRestarantOwner(email) ? "admin" : "user",
             verificationToken,
             verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
         })
