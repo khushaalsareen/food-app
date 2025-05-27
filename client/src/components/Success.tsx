@@ -12,7 +12,7 @@ const Success = () => {
 
   useEffect(() => {
     getOrderDetails();
-  }, []);
+  }, [getOrderDetails]);
 
   if (orders.length === 0)
     return (
