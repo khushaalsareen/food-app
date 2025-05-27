@@ -13,7 +13,7 @@ router.route("/logout").post(logout);
 router.route("/verify-email").post(verifyEmail);
 router.route("/forgot-password").post(forgotPassword);
 router.route("/reset-password/:token").post(resetPassword);
-router.route("/profile/update").put(isAuthenticated,updateProfile);
+router.route("/profile/update").put(isAuthenticated, updateProfile);
 router.post('/grant-admin-role', isAuthenticated, isSuperAdmin, grantAdminRole);
 
 export default router;

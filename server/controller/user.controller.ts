@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import { User } from "../models/user.model";
 import bcrypt from "bcryptjs";
-import crypto from "crypto"; 
+import crypto from "crypto";
 import cloudinary from "../utils/cloudinary";
 import { generateVerificationCode } from "../utils/generateVerificationCode";
 import { generateToken } from "../utils/generateToken";
 import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/email";
+import { isRestarantOwner } from "../utils/isRestaruantOwner";
 
 export const signup = async (req: Request, res: Response) => {
     try {
@@ -19,17 +20,18 @@ export const signup = async (req: Request, res: Response) => {
             })
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-        const verificationToken =  generateVerificationCode();
+        const verificationToken = generateVerificationCode();
 
         user = await User.create({
             fullname,
             email,
             password: hashedPassword,
             contact: Number(contact),
+            role: isRestarantOwner(email) ? "admin" : "user",
             verificationToken,
             verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
         })
-        generateToken(res,user);
+        generateToken(res, user);
 
         await sendVerificationEmail(email, verificationToken);
 
@@ -63,8 +65,13 @@ export const login = async (req: Request, res: Response) => {
         }
         generateToken(res, user);
         user.lastLogin = new Date();
+        if (user.isVerified === false) {
+            const code = generateVerificationCode();
+            user.verificationToken = code;
+            await user.save();
+            await sendVerificationEmail(user.email, code!);
+        }
         await user.save();
-
         // send user without passowrd
         const userWithoutPassword = await User.findOne({ email }).select("-password");
         return res.status(200).json({
@@ -80,7 +87,7 @@ export const login = async (req: Request, res: Response) => {
 export const verifyEmail = async (req: Request, res: Response) => {
     try {
         const { verificationCode } = req.body;
-       
+
         const user = await User.findOne({ verificationToken: verificationCode, verificationTokenExpiresAt: { $gt: Date.now() } }).select("-password");
 
         if (!user) {
@@ -205,14 +212,14 @@ export const updateProfile = async (req: Request, res: Response) => {
         // upload image on cloudinary
         let cloudResponse: any;
         cloudResponse = await cloudinary.uploader.upload(profilePicture);
-        const updatedData = {fullname, email, address, city, country, profilePicture};
+        const updatedData = { fullname, email, address, city, country, profilePicture };
 
-        const user = await User.findByIdAndUpdate(userId, updatedData,{new:true}).select("-password");
+        const user = await User.findByIdAndUpdate(userId, updatedData, { new: true }).select("-password");
 
         return res.status(200).json({
-            success:true,
+            success: true,
             user,
-            message:"Profile updated successfully"
+            message: "Profile updated successfully"
         });
     } catch (error) {
         console.error(error);
