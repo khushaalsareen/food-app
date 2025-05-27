@@ -1,27 +1,27 @@
 import mongoose, { Document, Model } from "mongoose";
 
 export interface IUser {
-    fullname:string;
-    email:string;
-    password:string;
-    contact:number;
-    address:string;
-    city:string;
-    country:string;
-    profilePicture:string;
+    fullname: string;
+    email: string;
+    password: string;
+    contact: number;
+    address: string;
+    city: string;
+    country: string;
+    profilePicture: string;
     lastLogin?: Date;
     isVerified?: boolean;
-    resetPasswordToken?:string;
-    resetPasswordTokenExpiresAt?:Date;
-    verificationToken?:string;
-    verificationTokenExpiresAt?:Date
+    resetPasswordToken?: string;
+    resetPasswordTokenExpiresAt?: Date;
+    verificationToken?: string;
+    verificationTokenExpiresAt?: Date
     role?: "user" | "admin" | "superadmin";
     currentStatus?: "active" | "blocked" // e.g., "active", "inactive"
 }
 
 export interface IUserDocument extends IUser, Document {
-    createdAt:Date;
-    updatedAt:Date;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 const userSchema = new mongoose.Schema<IUserDocument>({
@@ -31,7 +31,15 @@ const userSchema = new mongoose.Schema<IUserDocument>({
     },
     email: {
         type: String,
-        required: true
+        required: true,
+        unique: true,
+        validate: {
+            validator: function (email: string) {
+                return email.endsWith("@nitj.ac.in")
+            },
+            message: "Email must end with @nitj.ac.in"
+        },
+        match: [/@nitj\.ac\.in$/, "Email must end with @nitj.ac.in"]
     },
     password: {
         type: String,
@@ -45,41 +53,41 @@ const userSchema = new mongoose.Schema<IUserDocument>({
         type: String,
         default: "Update your address"
     },
-    city:{
-        type:String,
-        default:"Update your city"
+    city: {
+        type: String,
+        default: "Update your city"
     },
-    country:{
-        type:String,
-        default:"Update your country"
+    country: {
+        type: String,
+        default: "Update your country"
     },
-    profilePicture:{
-        type:String,
-        default:"",
+    profilePicture: {
+        type: String,
+        default: "",
     },
-        // advanced authentication
+    // advanced authentication
     role: {
         type: String,
         enum: ["user", "admin", "superadmin"],
         default: "user"
     },
-    lastLogin:{
-        type:Date,
-        default:Date.now
+    lastLogin: {
+        type: Date,
+        default: Date.now
     },
-    isVerified:{
-        type:Boolean,
-        default:false
+    isVerified: {
+        type: Boolean,
+        default: false
     },
     currentStatus: {
         type: String,
         enum: ["active", "blocked"],
         default: "active"
     },
-    resetPasswordToken:String,
-    resetPasswordTokenExpiresAt:Date,
-    verificationToken:String,
-    verificationTokenExpiresAt:Date,
-},{timestamps:true});
+    resetPasswordToken: String,
+    resetPasswordTokenExpiresAt: Date,
+    verificationToken: String,
+    verificationTokenExpiresAt: Date,
+}, { timestamps: true });
 
-export const User : Model<IUserDocument> = mongoose.model<IUserDocument>("User", userSchema);
+export const User: Model<IUserDocument> = mongoose.model<IUserDocument>("User", userSchema);
