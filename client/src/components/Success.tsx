@@ -37,10 +37,9 @@ const Success = () => {
             Order Summary
           </h2>
           {/* Your Ordered Item Display here  */}
-          {orders.map((order:any, index:number) => (
-            <div key={index}>
-              {order.cartItems.map((item:CartItem) => (
-                <div className="mb-4">
+        
+              {orders[orders.length-1].cartItems.map((item:CartItem,index) => (
+                <div className="mb-4" key={index}>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center">
                       <img
@@ -55,15 +54,14 @@ const Success = () => {
                     <div className="text-right">
                       <div className="text-gray-800 dark:text-gray-200 flex items-center">
                         <IndianRupee />
-                        <span className="text-lg font-medium">{item.price}</span>
+                        <span className="text-lg font-medium">{item.price*item.quantity}</span>
                       </div>
                     </div>
                   </div>
                   <Separator className="my-4" />
                 </div>
               ))}
-            </div>
-          ))}
+          
         </div>
         <Link to="/cart">
           <Button className="bg-orange hover:bg-hoverOrange w-full py-3 rounded-md shadow-lg">

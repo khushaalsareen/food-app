@@ -33,9 +33,13 @@ const navigate = useNavigate();
             return;
         }
         // login api implementation start here
+        //  const success = await signup(input);
+  
         try {
-          await signup(input);
-          navigate("/verify-email");
+        const success =  await signup(input);
+        if (success) {
+    navigate("/verify-email"); // ✅ Only navigate on successful signup
+  }
         } catch (error) {
           console.log(error);
         }

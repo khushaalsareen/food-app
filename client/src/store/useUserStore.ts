@@ -25,7 +25,7 @@ type UserState = {
     isAuthenticated: boolean;
     isCheckingAuth: boolean;
     loading: boolean;
-    signup: (input:SignupInputState) => Promise<void>;
+    signup: (input:SignupInputState) => Promise<boolean>;
     login: (input:LoginInputState) => Promise<void>;
     verifyEmail: (verificationCode: string) => Promise<void>;
     checkAuthentication: () => Promise<void>;
@@ -49,13 +49,23 @@ export const useUserStore = create<UserState>()(persist((set) => ({
                     'Content-Type': 'application/json'
                 }
             });
+            console.log(response)
+             if (!response.data.success) {
+      toast.error(response.data.message);
+      set({ loading: false });
+      
+      return false // 🔴 ensure error is thrown
+      
+    }
             if (response.data.success) { 
                 toast.success(response.data.message);
                 set({ loading: false, user: response.data.user, isAuthenticated: true });
+                return true; // 🔴 ensure success is returned
             }
         } catch (error: any) {
             toast.error(error.response.data.message);
             set({ loading: false });
+            return false; // 🔴 ensure error is returned
         }
     },
     login: async (input: LoginInputState) => {

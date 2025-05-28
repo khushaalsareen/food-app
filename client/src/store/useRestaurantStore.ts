@@ -64,23 +64,46 @@ export const useRestaurantStore = create<RestaurantState>()(persist((set, get) =
             set({ loading: false });
         }
     },
-    searchRestaurant: async (searchText: string, searchQuery: string, selectedCuisines: any) => {
-        try {
-            set({ loading: true });
+    // searchRestaurant: async (searchText: string, searchQuery: string, selectedCuisines: any) => {
+    //     try {
+    //         set({ loading: true });
 
-            const params = new URLSearchParams();
-            params.set("searchQuery", searchQuery);
-            params.set("selectedCuisines", selectedCuisines.join(","));
+    //         const params = new URLSearchParams();
+    //         params.set("searchQuery", searchQuery);
+    //         params.set("selectedCuisines", selectedCuisines.join(","));
 
-            // await new Promise((resolve) => setTimeout(resolve, 2000));
-            const response = await axios.get(`${API_END_POINT}/search/${searchText}?${params.toString()}`);
-            if (response.data.success) {
-                set({ loading: false, searchedRestaurant: response.data });
-            }
-        } catch (error) {
-            set({ loading: false });
-        }
-    },
+    //         // await new Promise((resolve) => setTimeout(resolve, 2000));
+    //         const response = await axios.get(`${API_END_POINT}/search/${searchText}?${params.toString()}`);
+    //         if (response.data.success) {
+    //             set({ loading: false, searchedRestaurant: response.data });
+    //         }
+    //     } catch (error) {
+    //         set({ loading: false });
+    //     }
+    // },
+    searchRestaurant: async (searchText, searchQuery, selectedCuisines) => {
+    try {
+      set({ loading: true });
+
+      const params = new URLSearchParams();
+      if (searchQuery) params.set("searchQuery", searchQuery);
+      if (selectedCuisines.length > 0)
+        params.set("selectedCuisines", selectedCuisines.join(","));
+
+      const response = await axios.get(
+        `${API_END_POINT}/search/${searchText}?${params.toString()}`
+      );
+
+      if (response.data.success) {
+        set({ loading: false, searchedRestaurant: response.data });
+      } else {
+        set({ loading: false, searchedRestaurant: { data: [] } });
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+      set({ loading: false, searchedRestaurant: { data: [] } });
+    }
+  },
     addMenuToRestaurant: (menu: MenuItem) => {
         set((state: any) => ({
             restaurant: state.restaurant ? { ...state.restaurant, menus: [...state.restaurant.menus, menu] } : null,

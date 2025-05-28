@@ -43,6 +43,7 @@ export const createRestaurant = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" })
     }
 }
+
 export const getRestaurant = async (req: Request, res: Response) => {
     try {
         const restaurant = await Restaurant.findOne({ user: req.id }).populate('menus');
@@ -59,6 +60,7 @@ export const getRestaurant = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" })
     }
 }
+
 export const updateRestaurant = async (req: Request, res: Response) => {
     try {
         const { restaurantName, city, country, deliveryTime, cuisines } = req.body;
@@ -148,6 +150,7 @@ export const searchRestaurant = async (req: Request, res: Response) => {
                 { restaurantName: { $regex: searchText, $options: 'i' } },
                 { city: { $regex: searchText, $options: 'i' } },
                 { country: { $regex: searchText, $options: 'i' } },
+                { cuisines: { $regex: searchQuery, $options: 'i' } }
             ]
         }
         // filter on the basis of searchQuery
