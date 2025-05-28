@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import uploadImageOnCloudinary from "../utils/imageUpload";
-import { Menu } from "../models/menu.model";
+import { Menu, MenuRating } from "../models/menu.model";
 import { Restaurant } from "../models/restaurant.model";
 import mongoose from "mongoose";
 
@@ -72,3 +72,43 @@ export const editMenu = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const rateMenu = async (req: Request, res: Response) => {
+    try {
+        const { menuId, rating } = req.body;
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({
+                success: false,
+                message: "Rating must be between 1 and 5"
+            });
+        }
+        const menu = await Menu.findById(menuId);
+        if (!menu) {
+            return res.status(404).json({
+                success: false,
+                message: "Menu not found"
+            });
+        }
+        const existingRating = await MenuRating.findOne({ user: req.id, menu: menuId });
+        if (existingRating) {
+            existingRating.rating = rating;
+        } else {
+            const newRating = new MenuRating({
+                user: req.id,
+                menu: menuId,
+                rating
+            });
+            await newRating.save();
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Menu rated successfully",
+            menu
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+

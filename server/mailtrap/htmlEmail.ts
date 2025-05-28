@@ -69,7 +69,7 @@ export const htmlContent: string = `
                 <p>If you did not request this verification, please ignore this email.</p>
             </div>
             <div class="footer">
-                <p>&copy; 2024 Your Company. All rights reserved.</p>
+                <p>&copy; 2025 Your Company. All rights reserved.</p>
             </div>
         </div>
     </body>
@@ -77,7 +77,7 @@ export const htmlContent: string = `
     `;
 
 export const generateWelcomeEmailHtml = (name: string) => {
-    return `
+  return `
           <html>
             <head>
               <style>
@@ -124,7 +124,7 @@ export const generateWelcomeEmailHtml = (name: string) => {
                   <p>Best Regards,<br/>The Patel Food Team</p>
                 </div>
                 <div class="email-footer">
-                  <p>&copy; 2024 Patel Food. All rights reserved.</p>
+                  <p>&copy; 2025 Patel Food. All rights reserved.</p>
                 </div>
               </div>
             </body>
@@ -133,7 +133,7 @@ export const generateWelcomeEmailHtml = (name: string) => {
 };
 
 export const generatePasswordResetEmailHtml = (resetURL: string) => {
-    return `
+  return `
       <html>
         <head>
           <style>
@@ -190,16 +190,16 @@ export const generatePasswordResetEmailHtml = (resetURL: string) => {
               <p>Thank you,<br/>The Patel Food Team</p>
             </div>
             <div class="email-footer">
-              <p>&copy; 2024 Patel Food. All rights reserved.</p>
+              <p>&copy; 2025 Patel Food. All rights reserved.</p>
             </div>
           </div>
         </body>
       </html>
     `;
-  };
+};
 
-  export const generateResetSuccessEmailHtml = () => {
-    return `
+export const generateResetSuccessEmailHtml = () => {
+  return `
       <html>
         <head>
           <style>
@@ -245,10 +245,10 @@ export const generatePasswordResetEmailHtml = (resetURL: string) => {
               <p>Thank you,<br/>The Patel Food Team</p>
             </div>
             <div class="email-footer">
-              <p>&copy; 2024 Patel Food. All rights reserved.</p>
+              <p>&copy; 2025 Patel Food. All rights reserved.</p>
             </div>
           </div>
         </body>
       </html>
     `;
-  };
+};

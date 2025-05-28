@@ -16,7 +16,6 @@ import EditMenu from "./EditMenu";
 import { MenuFormSchema, menuSchema } from "@/schema/menuSchema";
 import { useMenuStore } from "@/store/useMenuStore";
 import { useRestaurantStore } from "@/store/useRestaurantStore";
- 
 
 const AddMenu = () => {
   const [input, setInput] = useState<MenuFormSchema>({
@@ -24,13 +23,14 @@ const AddMenu = () => {
     description: "",
     price: 0,
     image: undefined,
+    quantity: 1,
   });
   const [open, setOpen] = useState<boolean>(false);
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [selectedMenu, setSelectedMenu] = useState<any>();
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
   const { loading, createMenu } = useMenuStore();
-  const {restaurant} = useRestaurantStore();
+  const { restaurant } = useRestaurantStore();
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -51,14 +51,13 @@ const AddMenu = () => {
       formData.append("name", input.name);
       formData.append("description", input.description);
       formData.append("price", input.price.toString());
-      if(input.image){
+      if (input.image) {
         formData.append("image", input.image);
       }
       await createMenu(formData);
     } catch (error) {
       console.log(error);
     }
-   
   };
   return (
     <div className="max-w-6xl mx-auto my-10">
@@ -160,7 +159,7 @@ const AddMenu = () => {
           </DialogContent>
         </Dialog>
       </div>
-      {restaurant?.menus.map((menu: any, idx: number) => (
+      {restaurant?.menus?.map((menu: any, idx: number) => (
         <div key={idx} className="mt-6 space-y-4">
           <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
             <img
