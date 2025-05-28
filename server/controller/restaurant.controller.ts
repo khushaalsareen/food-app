@@ -237,6 +237,27 @@ export const blockAccount = async (req: Request, res: Response) => {
     }
 }
 
+export const unBlockAccount = async (req: Request, res: Response) => {
+    try {
+        const userEmailId = req.body.emailId;
+        if (!userEmailId) {
+            return res.status(400).json({ message: "Email ID is required" });
+        }
+        const user = await User.findOne({ email: userEmailId });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.currentStatus = "active";
+        await user.save();
+        res.status(200).json({ message: "Account activated successfully" });
+
+
+    } catch (error) {
+        console.error("Error in activating account:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
 export const getAllRestaurants = async (req: Request, res: Response) => {
     try {
         const restaurants = await Restaurant.find().populate<{ user: IUser }>('user');
