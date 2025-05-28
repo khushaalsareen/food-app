@@ -24,6 +24,7 @@ const AddMenu = () => {
     description: "",
     price: 0,
     image: undefined,
+    quantity: "1",
   });
   const [open, setOpen] = useState<boolean>(false);
   const [editOpen, setEditOpen] = useState<boolean>(false);
@@ -32,10 +33,18 @@ const AddMenu = () => {
   const { loading, createMenu } = useMenuStore();
   const {restaurant} = useRestaurantStore();
 
-  const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-    setInput({ ...input, [name]: type === "number" ? Number(value) : value });
-  };
+  // const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value, type } = e.target;
+  //   setInput({ ...input, [name]: type === "number" ? Number(value) : value });
+  // };
+const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { name, value } = e.target;
+
+  setInput((prev) => ({
+    ...prev,
+    [name]: name === "price" ? Number(value) : value,
+  }));
+};
 
   const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -51,6 +60,8 @@ const AddMenu = () => {
       formData.append("name", input.name);
       formData.append("description", input.description);
       formData.append("price", input.price.toString());
+      formData.append("quantity", input.quantity.toString());
+
       if(input.image){
         formData.append("image", input.image);
       }
@@ -126,6 +137,21 @@ const AddMenu = () => {
                   </span>
                 )}
               </div>
+              <div>
+                <Label>Availability</Label>
+                <Input
+                  type="text"
+                  name="quantity"
+                  value={input.quantity}
+                  onChange={changeEventHandler}
+                  placeholder="Enter item quantity"
+                />
+                {error && (
+                  <span className="text-xs font-medium text-red-600">
+                    {error.quantity}
+                  </span>
+                )}
+                </div>
               <div>
                 <Label>Upload Menu Image</Label>
                 <Input

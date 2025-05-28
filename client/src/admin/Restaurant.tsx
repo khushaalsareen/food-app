@@ -14,7 +14,7 @@ const Restaurant = () => {
     restaurantName: "",
     city: "",
     country: "",
-    deliveryTime: 0,
+    deliveryTime: "0",
     cuisines: [],
     imageFile: undefined,
   });
@@ -74,7 +74,7 @@ const Restaurant = () => {
           restaurantName: restaurant.restaurantName || "",
           city: restaurant.city || "",
           country: restaurant.country || "",
-          deliveryTime: restaurant.deliveryTime || 0,
+          deliveryTime: restaurant.deliveryTime || "0",
           cuisines: restaurant.cuisines
             ? restaurant.cuisines.map((cuisine: string) => cuisine)
             : [],
@@ -141,9 +141,9 @@ const Restaurant = () => {
                 )}
               </div>
               <div>
-                <Label>Delivery Time</Label>
+                <Label>Estimated Delivery Time</Label>
                 <Input
-                  type="number"
+                  type="text"
                   name="deliveryTime"
                   value={input.deliveryTime}
                   onChange={changeEventHandler}
