@@ -4,6 +4,7 @@ import { Multer } from "multer";
 import uploadImageOnCloudinary from "../utils/imageUpload";
 import { Order } from "../models/order.model";
 import { IUser, User } from "../models/user.model";
+import { Menu } from "../models/menu.model";
 
 export const createRestaurant = async (req: Request, res: Response) => {
     try {
@@ -140,14 +141,20 @@ export const searchRestaurant = async (req: Request, res: Response) => {
         const searchQuery = req.query.searchQuery as string || "";
         const selectedCuisines = (req.query.selectedCuisines as string || "").split(",").filter(cuisine => cuisine);
         const query: any = {};
+        const dishes: any = {};
         // basic search based on searchText (name ,city, country)
-        console.log(selectedCuisines);
+        // console.log(selectedCuisines);
 
         if (searchText) {
             query.$or = [
                 { restaurantName: { $regex: searchText, $options: 'i' } },
                 { city: { $regex: searchText, $options: 'i' } },
                 { country: { $regex: searchText, $options: 'i' } },
+                { cuisines: { $regex: searchText, $options: 'i' } }
+            ]
+            dishes.$or = [
+                { name: { $regex: searchText, $options: 'i' } },
+                { description: { $regex: searchText, $options: 'i' } }
             ]
         }
         // filter on the basis of searchQuery
@@ -156,17 +163,32 @@ export const searchRestaurant = async (req: Request, res: Response) => {
                 { restaurantName: { $regex: searchQuery, $options: 'i' } },
                 { cuisines: { $regex: searchQuery, $options: 'i' } }
             ]
+            dishes.$or = [
+                { name: { $regex: searchQuery, $options: 'i' } },
+                { description: { $regex: searchQuery, $options: 'i' } }
+            ]
+
         }
         // console.log(query);
+        // console.log(dishes);
         // ["momos", "burger"]
         if (selectedCuisines.length > 0) {
             query.cuisines = { $in: selectedCuisines }
         }
 
         const restaurants = await Restaurant.find(query);
+        const dishesList = await Menu.find(dishes)
+            .populate({
+                path: 'restaurant',
+                match: { _id: { $exists: true } }, // Only populate if restaurant ID exists
+                select: 'restaurantName city country cuisines' // Select specific fields
+            });
+
         return res.status(200).json({
             success: true,
-            data: restaurants
+            restaurant: restaurants,
+            dishes: dishesList
+
         });
     } catch (error) {
         console.log(error);
