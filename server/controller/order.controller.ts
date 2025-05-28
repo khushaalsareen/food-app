@@ -140,6 +140,12 @@ export const createLineItems = (checkoutSessionRequest: CheckoutSessionRequest, 
         const menuItem = menuItems.find((item: any) => item._id.toString() === cartItem.menuId);
         if (!menuItem) throw new Error(`Menu item id not found`);
 
+        console.log(menuItem);
+        if (cartItem.quantity < menuItem.quantity) {
+            throw new Error(`Insufficient quantity for ${menuItem.name}. Available: ${menuItem.quantity}, Requested: ${cartItem.quantity}`);
+        }
+        menuItem.quantity -= cartItem.quantity; // Decrease the quantity in the menu item
+        menuItem.save(); // Save the updated menu item
         return {
             price_data: {
                 currency: 'inr',
