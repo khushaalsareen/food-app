@@ -287,7 +287,7 @@ export const getAllRestaurants = async (req: Request, res: Response) => {
 
         return res.status(200).json({
             success: true,
-            data: filteredRestaurants
+            restaurants: filteredRestaurants
         });
     } catch (error) {
         console.error("Error fetching restaurants:", error);

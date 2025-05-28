@@ -30,7 +30,7 @@ const AddMenu = () => {
   const [selectedMenu, setSelectedMenu] = useState<any>();
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
   const { loading, createMenu } = useMenuStore();
-  const { restaurant } = useRestaurantStore();
+  const { restaurant,getSingleRestaurant } = useRestaurantStore();
 
   // const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const { name, value, type } = e.target;
@@ -65,6 +65,11 @@ const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         formData.append("image", input.image);
       }
       await createMenu(formData);
+
+      if (restaurant?._id) {
+      await getSingleRestaurant(restaurant._id);
+    }
+
     } catch (error) {
       console.log(error);
     }
