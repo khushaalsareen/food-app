@@ -82,28 +82,28 @@ export const useRestaurantStore = create<RestaurantState>()(persist((set, get) =
     //     }
     // },
     searchRestaurant: async (searchText, searchQuery, selectedCuisines) => {
-    try {
-      set({ loading: true });
+        try {
+            set({ loading: true });
 
-      const params = new URLSearchParams();
-      if (searchQuery) params.set("searchQuery", searchQuery);
-      if (selectedCuisines.length > 0)
-        params.set("selectedCuisines", selectedCuisines.join(","));
+            const params = new URLSearchParams();
+            if (searchQuery) params.set("searchQuery", searchQuery);
+            if (selectedCuisines.length > 0)
+                params.set("selectedCuisines", selectedCuisines.join(","));
 
-      const response = await axios.get(
-        `${API_END_POINT}/search/${searchText}?${params.toString()}`
-      );
+            const response = await axios.get(
+                `${API_END_POINT}/search/${searchText}?${params.toString()}`
+            );
 
-      if (response.data.success) {
-        set({ loading: false, searchedRestaurant: response.data });
-      } else {
-        set({ loading: false, searchedRestaurant: { data: [] } });
-      }
-    } catch (error) {
-      console.error("Search error:", error);
-      set({ loading: false, searchedRestaurant: { data: [] } });
-    }
-  },
+            if (response.data.success) {
+                set({ loading: false, searchedRestaurant: response.data });
+            } else {
+                set({ loading: false, searchedRestaurant: { data: [] } });
+            }
+        } catch (error) {
+            console.error("Search error:", error);
+            set({ loading: false, searchedRestaurant: { data: [] } });
+        }
+    },
     addMenuToRestaurant: (menu: MenuItem) => {
         set((state: any) => ({
             restaurant: state.restaurant ? { ...state.restaurant, menus: [...state.restaurant.menus, menu] } : null,
@@ -111,7 +111,7 @@ export const useRestaurantStore = create<RestaurantState>()(persist((set, get) =
     },
     updateMenuToRestaurant: (updatedMenu: MenuItem) => {
         set((state: any) => {
-            
+
             if (state.restaurant) {
                 const updatedMenuList = state.restaurant.menus.map((menu: any) => menu._id === updatedMenu._id ? updatedMenu : menu);
                 return {
@@ -141,7 +141,10 @@ export const useRestaurantStore = create<RestaurantState>()(persist((set, get) =
             if (response.data.success) {
                 set({ singleRestaurant: response.data.restaurant })
             }
-        } catch (error) { }
+        } catch (error) {
+            console.log(error);
+            set({ singleRestaurant: null }); // Reset if error occurs
+        }
     },
     getRestaurantOrders: async () => {
         try {
