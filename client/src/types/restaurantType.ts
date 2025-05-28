@@ -1,6 +1,7 @@
 import { Orders } from "./orderType";
 
 export type MenuItem = {
+    quantity: number;
     _id: string;
     name: string;
     description: string;

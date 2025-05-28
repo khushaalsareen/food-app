@@ -34,13 +34,14 @@ const EditMenu = ({
     name: "",
     description: "",
     price: 0,
+    quantity: 1,
     image: undefined,
   });
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
   const {loading, editMenu} = useMenuStore();
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
+    const { name, value, type} = e.target;
     setInput({ ...input, [name]: type === "number" ? Number(value) : value });
   };
 
@@ -59,6 +60,7 @@ const EditMenu = ({
       formData.append("name", input.name);
       formData.append("description", input.description);
       formData.append("price", input.price.toString());
+      formData.append("quantity", input.quantity.toString())
       if(input.image){
         formData.append("image", input.image);
       }
@@ -74,8 +76,10 @@ const EditMenu = ({
       description: selectedMenu?.description || "",
       price: selectedMenu?.price || 0,
       image: undefined,
+      quantity: selectedMenu?.quantity || 0,
     });
   }, [selectedMenu]);
+
   return (
     <Dialog open={editOpen} onOpenChange={setEditOpen}>
       <DialogContent>
@@ -116,6 +120,17 @@ const EditMenu = ({
               value={input.price}
               onChange={changeEventHandler}
               placeholder="Enter menu price"
+            />
+            {error && <span className="text-xs font-medium text-red-600">{error.price}</span>}
+          </div>
+            <div>
+            <Label>Availability</Label>
+            <Input
+              type="number"
+              name="quantity"
+              value={input.quantity}
+              onChange={changeEventHandler}
+              placeholder="Enter item quantity"
             />
             {error && <span className="text-xs font-medium text-red-600">{error.price}</span>}
           </div>

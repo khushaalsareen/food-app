@@ -43,7 +43,10 @@ export const signup = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ success:false, message: "Internal server error" })
+        return res.status(500).json({
+            message: error instanceof Error ? error.message : "Internal server error",
+            success: false
+        });
     }
 };
 export const login = async (req: Request, res: Response) => {
@@ -81,7 +84,10 @@ export const login = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: "Internal server error" })
+        return res.status(500).json({
+            message: error instanceof Error ? error.message : "Internal server error",
+            success: false
+        });
     }
 }
 export const verifyEmail = async (req: Request, res: Response) => {
@@ -111,7 +117,10 @@ export const verifyEmail = async (req: Request, res: Response) => {
         })
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: "Internal server error" })
+        return res.status(500).json({
+            message: error instanceof Error ? error.message : "Internal server error",
+            success: false
+        });
     }
 }
 export const logout = async (_: Request, res: Response) => {
@@ -122,7 +131,10 @@ export const logout = async (_: Request, res: Response) => {
         });
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: "Internal server error" })
+        return res.status(500).json({
+            message: error instanceof Error ? error.message : "Internal server error",
+            success: false
+        });
     }
 };
 export const forgotPassword = async (req: Request, res: Response) => {
@@ -153,7 +165,10 @@ export const forgotPassword = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({
+            message: error instanceof Error ? error.message : "Internal server error",
+            success: false
+        });
     }
 };
 export const resetPassword = async (req: Request, res: Response) => {
@@ -183,7 +198,10 @@ export const resetPassword = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({
+            message: error instanceof Error ? error.message : "Internal server error",
+            success: false
+        });
     }
 }
 export const checkAuth = async (req: Request, res: Response) => {
@@ -202,7 +220,10 @@ export const checkAuth = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({
+            message: error instanceof Error ? error.message : "Internal server error",
+            success: false
+        });
     }
 };
 export const updateProfile = async (req: Request, res: Response) => {
@@ -223,6 +244,9 @@ export const updateProfile = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({
+            message: error instanceof Error ? error.message : "Internal server error",
+            success: false
+        });
     }
 }
