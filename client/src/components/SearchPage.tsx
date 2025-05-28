@@ -14,7 +14,9 @@ import { Restaurant } from "@/types/restaurantType";
 const SearchPage = () => {
   const params = useParams();
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"restaurants" | "dishes">("restaurants");
+  const [activeTab, setActiveTab] = useState<"restaurants" | "dishes">(
+    "restaurants"
+  );
 
   const {
     loading,
@@ -74,7 +76,10 @@ const SearchPage = () => {
           {/* Applied Filters */}
           <div className="flex flex-wrap gap-2 mb-4">
             {appliedFilter.map((filter, idx) => (
-              <div key={idx} className="relative inline-flex items-center max-w-full">
+              <div
+                key={idx}
+                className="relative inline-flex items-center max-w-full"
+              >
                 <Badge
                   className="text-[#D19254] rounded-md hover:cursor-pointer pr-6 whitespace-nowrap"
                   variant="outline"
@@ -95,10 +100,10 @@ const SearchPage = () => {
             {loading ? (
               <SearchPageSkeleton />
             ) : activeTab === "restaurants" ? (
-              searchedRestaurant?.restaurant.length === 0 ? (
+              searchedRestaurant?.restaurant?.length === 0 ? (
                 <NoResultFound searchText={params.text || ""} />
               ) : (
-                searchedRestaurant?.restaurant.map((rest: Restaurant) => (
+                searchedRestaurant?.restaurant?.map((rest: Restaurant) => (
                   <Card
                     key={rest._id}
                     className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300"
@@ -130,7 +135,8 @@ const SearchPage = () => {
                       <div className="mt-2 gap-1 flex items-center text-gray-600 dark:text-gray-400">
                         <Globe size={16} />
                         <p className="text-sm">
-                          Country: <span className="font-medium">{rest.country}</span>
+                          Country:{" "}
+                          <span className="font-medium">{rest.country}</span>
                         </p>
                       </div>
                       <div className="flex gap-2 mt-4 flex-wrap">
@@ -173,63 +179,67 @@ const SearchPage = () => {
                   </Card>
                 ))
               )
+            ) : // Dishes tab content
+            searchedRestaurant?.dishes?.length === 0 ? (
+              <NoResultFound searchText={params.text || ""} />
             ) : (
-              // Dishes tab content
-              searchedRestaurant?.dishes.length === 0 ? (
-                <NoResultFound searchText={params.text || ""} />
-              ) : (
-                searchedRestaurant?.dishes.map((dish: any) => (
-                  <Card
-                    key={dish._id}
-                    className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300"
-                  >
-                    <div className="relative">
-                      <AspectRatio ratio={16 / 6}>
-                        <img
-                          src={dish.image}
-                          alt={dish.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </AspectRatio>
-                    </div>
-                    <CardContent className="p-4">
-                      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        {dish.name}
-                      </h1>
-                      <p className="mt-2 text-gray-700 dark:text-gray-300">
-                        {dish.description}
-                      </p>
-                      <p className="mt-2 font-semibold text-orange-600 dark:text-orange-400">
-                        ₹{dish.price}
-                      </p>
-                      {/* Show related restaurant info */}
-                      {dish.restaurant && (
-                        <div className="mt-4 text-gray-600 dark:text-gray-400 text-sm">
-                          <p>
-                            Restaurant:{" "}
-                            <span className="font-medium">
-                              {dish.restaurant.restaurantName}
-                            </span>
-                          </p>
-                          <p>
-                            City: <span className="font-medium">{dish.restaurant.city}</span>
-                          </p>
-                          <p>
-                            Country: <span className="font-medium">{dish.restaurant.country}</span>
-                          </p>
-                        </div>
-                      )}
-                    </CardContent>
-                    <CardFooter className="p-4 border-t dark:border-t-gray-700 border-t-gray-100 flex justify-end">
-                      <Link to={`/restaurant/${dish.restaurant._id}`}>
-                        <Button className="bg-orange hover:bg-hoverOrange font-semibold py-2 px-4 rounded-full shadow-md transition-colors duration-200">
-                          View Restaurant
-                        </Button>
-                      </Link>
-                    </CardFooter>
-                  </Card>
-                ))
-              )
+              searchedRestaurant?.dishes?.map((dish: any) => (
+                <Card
+                  key={dish._id}
+                  className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300"
+                >
+                  <div className="relative">
+                    <AspectRatio ratio={16 / 6}>
+                      <img
+                        src={dish.image}
+                        alt={dish.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </AspectRatio>
+                  </div>
+                  <CardContent className="p-4">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      {dish.name}
+                    </h1>
+                    <p className="mt-2 text-gray-700 dark:text-gray-300">
+                      {dish.description}
+                    </p>
+                    <p className="mt-2 font-semibold text-orange-600 dark:text-orange-400">
+                      ₹{dish.price}
+                    </p>
+                    {/* Show related restaurant info */}
+                    {dish.restaurant && (
+                      <div className="mt-4 text-gray-600 dark:text-gray-400 text-sm">
+                        <p>
+                          Restaurant:{" "}
+                          <span className="font-medium">
+                            {dish.restaurant.restaurantName}
+                          </span>
+                        </p>
+                        <p>
+                          City:{" "}
+                          <span className="font-medium">
+                            {dish.restaurant.city}
+                          </span>
+                        </p>
+                        <p>
+                          Country:{" "}
+                          <span className="font-medium">
+                            {dish.restaurant.country}
+                          </span>
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className="p-4 border-t dark:border-t-gray-700 border-t-gray-100 flex justify-end">
+                    <Link to={`/restaurant/${dish.restaurant._id}`}>
+                      <Button className="bg-orange hover:bg-hoverOrange font-semibold py-2 px-4 rounded-full shadow-md transition-colors duration-200">
+                        View Restaurant
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))
             )}
           </div>
         </div>

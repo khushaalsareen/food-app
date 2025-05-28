@@ -16,7 +16,6 @@ import EditMenu from "./EditMenu";
 import { MenuFormSchema, menuSchema } from "@/schema/menuSchema";
 import { useMenuStore } from "@/store/useMenuStore";
 import { useRestaurantStore } from "@/store/useRestaurantStore";
- 
 
 const AddMenu = () => {
   const [input, setInput] = useState<MenuFormSchema>({
@@ -31,7 +30,7 @@ const AddMenu = () => {
   const [selectedMenu, setSelectedMenu] = useState<any>();
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
   const { loading, createMenu } = useMenuStore();
-  const {restaurant} = useRestaurantStore();
+  const { restaurant } = useRestaurantStore();
 
   // const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const { name, value, type } = e.target;
@@ -69,7 +68,6 @@ const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     } catch (error) {
       console.log(error);
     }
-   
   };
   return (
     <div className="max-w-6xl mx-auto my-10">
@@ -186,7 +184,7 @@ const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
           </DialogContent>
         </Dialog>
       </div>
-      {restaurant?.menus.map((menu: any, idx: number) => (
+      {restaurant?.menus?.map((menu: any, idx: number) => (
         <div key={idx} className="mt-6 space-y-4">
           <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
             <img

@@ -9,6 +9,8 @@ import restaurantRoute from "./routes/restaurant.route";
 import menuRoute from "./routes/menu.route";
 import orderRoute from "./routes/order.route";
 import path from "path";
+import cron from "node-cron";
+import { updateRating } from "./utils/updateRating";
 
 dotenv.config();
 
@@ -40,7 +42,19 @@ app.use("/api/v1/order", orderRoute);
 //     res.sendFile(path.resolve(DIRNAME, "client","dist","index.html"));
 // });
 
+// add cron job for rating update
+cron.schedule("0 0 * * *", async () => {
+    console.log("Running cron job to update ratings...");
+    try {
+        await updateRating();
+        console.log("Ratings updated successfully.");
+    } catch (error) {
+        console.error("Error updating ratings:", error);
+    }
+});
+
 app.listen(PORT, () => {
     connectDB();
+    // updateRating();
     console.log(`Server listen at port ${PORT}`);
 });

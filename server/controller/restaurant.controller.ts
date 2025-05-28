@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Restaurant } from "../models/restaurant.model";
+import { Restaurant, RestaurantRating } from "../models/restaurant.model";
 import { Multer } from "multer";
 import uploadImageOnCloudinary from "../utils/imageUpload";
 import { Order } from "../models/order.model";
@@ -147,7 +147,7 @@ export const searchRestaurant = async (req: Request, res: Response) => {
         const dishes: any = {};
         // basic search based on searchText (name ,city, country)
         // console.log(selectedCuisines);
-
+        console.log(searchText, searchQuery, selectedCuisines);
         if (searchText) {
             query.$or = [
                 { restaurantName: { $regex: searchText, $options: 'i' } },
@@ -176,10 +176,14 @@ export const searchRestaurant = async (req: Request, res: Response) => {
         }
         // console.log(query);
         // console.log(dishes);
+
         // ["momos", "burger"]
         if (selectedCuisines.length > 0) {
             query.cuisines = { $in: selectedCuisines }
+            dishes.cuisines = { $in: selectedCuisines }
         }
+        console.log(query);
+        console.log(dishes);
 
         const restaurants = await Restaurant.find(query);
         const dishesList = await Menu.find(dishes)
@@ -290,3 +294,38 @@ export const getAllRestaurants = async (req: Request, res: Response) => {
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+
+export const rateRestaurant = async (req: Request, res: Response) => {
+    try {
+        const { restaurantId, rating } = req.body;
+        if (!restaurantId || !rating) {
+            return res.status(400).json({ message: "Restaurant ID and rating are required" });
+        }
+
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) {
+            return res.status(404).json({ message: "Restaurant not found" });
+        }
+
+        const existingRating = await RestaurantRating.findOne({
+            user: req.id,
+            restaurant: restaurantId
+        });
+
+        if (existingRating) {
+            existingRating.rating = rating;
+            await existingRating.save();
+        } else {
+            await RestaurantRating.create({
+                user: req.id,
+                restaurant: restaurantId,
+                rating
+            });
+        }
+
+        return res.status(200).json({ message: "Rating submitted successfully" });
+    } catch (error) {
+        console.error("Error submitting rating:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}

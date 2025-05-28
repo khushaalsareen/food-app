@@ -8,6 +8,14 @@ export interface IMenu {
   price: number;
   image: string;
   quantity: number;
+  rating?: number; // Optional field for average rating
+  noOfRatings?: number; // Optional field for number of ratings
+}
+
+export interface IMenuRating {
+  user: mongoose.Schema.Types.ObjectId;
+  menu: mongoose.Schema.Types.ObjectId;
+  rating: number;
 }
 export interface IMenuDocument extends IMenu, Document {
   createdAt: Date;
@@ -39,7 +47,36 @@ const menuSchema = new mongoose.Schema<IMenuDocument>({
     type: Number,
     default: 1,
     required: true
+  },
+  rating: {
+    type: Number,
+    default: 0 // Default rating is set to 0
+  },
+  noOfRatings: {
+    type: Number,
+    default: 0 // Default number of ratings is set to 0
   }
 }, { timestamps: true });
+
+const menuRatingSchema = new mongoose.Schema<IMenuRating>({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+  menu: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Menu",
+    required: true
+  },
+  rating: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 5
+  }
+});
+
+export const MenuRating = mongoose.model("MenuRating", menuRatingSchema);
 
 export const Menu = mongoose.model("Menu", menuSchema);
