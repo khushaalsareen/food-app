@@ -90,7 +90,7 @@ const appRouter = createBrowserRouter([
   { path: "/login", element: <AuthenticatedUser><Login /></AuthenticatedUser> },
   { path: "/signup", element: <AuthenticatedUser><Signup /></AuthenticatedUser> },
   { path: "/forgot-password", element: <AuthenticatedUser><ForgotPassword /></AuthenticatedUser> },
-  { path: "/reset-password", element: <ResetPassword /> },
+  { path: "/resetpassword/:token", element: <ResetPassword /> },
   { path: "/verify-email", element: <VerifyEmail /> },
 ]);
 

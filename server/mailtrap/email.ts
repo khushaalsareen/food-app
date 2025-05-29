@@ -47,7 +47,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
-            subject: 'Welcome to PatelEats',
+            subject: 'Welcome to Campus Bites',
             html: htmlContent
         };
 

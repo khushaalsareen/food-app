@@ -29,7 +29,7 @@ const Success = () => {
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
             Order Status:{" "}
-            <span className="text-[#FF5A5A]">{"confirm".toUpperCase()}</span>
+            <span className="text-[#FF5A5A]">{orders[orders.length-1]?.status}</span>
           </h1>
         </div>
         <div className="mb-6">
