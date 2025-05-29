@@ -42,6 +42,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   if (user?.role === "user") return <Navigate to="/" replace />;
   return children;
 };
+  // const { user, isAuthenticated } = useUserStore();
 
 const appRouter = createBrowserRouter([
   {

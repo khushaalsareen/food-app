@@ -205,6 +205,9 @@ export const searchRestaurant = async (req: Request, res: Response) => {
     }
 }
 
+
+
+
 export const getSingleRestaurant = async (req: Request, res: Response) => {
     try {
         const restaurantId = req.params.id;
@@ -269,14 +272,51 @@ export const unBlockAccount = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Internal server error" });
     }
 }
+// export const getAllRestaurants = async (req: Request, res: Response) => {
+//     try {
+//         const restaurants = await Restaurant.find().populate<{ user: IUser }>('user');
+
+//         // Filtering out restaurants whose users are either missing or blocked
+//         const filteredRestaurants = restaurants.filter(
+//             (restaurant) => restaurant.user && restaurant.user.currentStatus !== "blocked"
+//         );
+
+//         if (filteredRestaurants.length === 0) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "No restaurants found"
+//             });
+//         }
+
+//         return res.status(200).json({
+//             success: true,
+//             restaurants: filteredRestaurants
+//         });
+//     } catch (error) {
+//         console.error("Error fetching restaurants:", error);
+//         return res.status(500).json({ success: false, message: "Internal server error" });
+//     }
+// };
+
+
 export const getAllRestaurants = async (req: Request, res: Response) => {
     try {
+        // Step 1: Fetch the requesting user
+        const loggedInUser = await User.findById(req.id);
+        if (!loggedInUser) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        // Step 2: Fetch all restaurants with populated user data
         const restaurants = await Restaurant.find().populate<{ user: IUser }>('user');
 
-        // Filtering out restaurants whose users are either missing or blocked
-        const filteredRestaurants = restaurants.filter(
-            (restaurant) => restaurant.user && restaurant.user.currentStatus !== "blocked"
-        );
+        // Step 3: If not superadmin, filter out restaurants with blocked users
+        let filteredRestaurants = restaurants;
+        if (loggedInUser.role !== "superadmin") {
+            filteredRestaurants = restaurants.filter(
+                (restaurant) => restaurant.user && restaurant.user.currentStatus !== "blocked"
+            );
+        }
 
         if (filteredRestaurants.length === 0) {
             return res.status(404).json({
