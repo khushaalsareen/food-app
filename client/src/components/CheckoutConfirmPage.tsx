@@ -147,7 +147,6 @@
 
 // export default CheckoutConfirmPage;
 
-
 import { Dispatch, FormEvent, SetStateAction, useState } from "react";
 import {
   Dialog,
@@ -161,17 +160,20 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useUserStore } from "@/store/useUserStore";
 import { CheckoutSessionRequest } from "@/types/orderType";
-import { useCartStore } from "@/context/CartProvider";  // use context hook here
-import { useRestaurantStore } from "@/store/useRestaurantStore";
 import { useOrderStore } from "@/store/useOrderStore";
 import { Loader2 } from "lucide-react";
+import { CartItem } from "@/types/cartType";
 
 const CheckoutConfirmPage = ({
   open,
   setOpen,
+  restaurantId,
+  cartItems,
 }: {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
+  restaurantId: string;
+  cartItems: CartItem[];
 }) => {
   const { user } = useUserStore();
   const [input, setInput] = useState({
@@ -183,8 +185,6 @@ const CheckoutConfirmPage = ({
     country: user?.country || "",
   });
 
-  const { cart } = useCartStore();  // <-- Use cart from context store here
-  const { restaurant } = useRestaurantStore();
   const { createCheckoutSession, loading } = useOrderStore();
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,15 +197,16 @@ const CheckoutConfirmPage = ({
 
     try {
       const checkoutData: CheckoutSessionRequest = {
-        cartItems: cart.map((cartItem) => ({
+        cartItems: cartItems.map((cartItem) => ({
           menuId: cartItem._id,
           name: cartItem.name,
           image: cartItem.image,
           price: cartItem.price.toString(),
           quantity: cartItem.quantity.toString(),
+          restaurantId: restaurantId,
         })),
         deliveryDetails: input,
-        restaurantId: restaurant?._id as string,
+        restaurantId: restaurantId,
       };
 
       await createCheckoutSession(checkoutData);
@@ -213,7 +214,7 @@ const CheckoutConfirmPage = ({
       console.log(error);
     }
   };
-
+  console.log(open);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
