@@ -48,7 +48,7 @@ export const getRestaurant = async (req: Request, res: Response) => {
     try {
         const restaurant = await Restaurant.findOne({ user: req.id }).populate({
             path: 'menus',
-            match: { quantity: { $gt: 0 } } // Only include menus with quantity > 0
+            match: { quantity: { $gt: 0 }, currentStatus: "active" } // Only include menus with quantity > 0
         });
         if (!restaurant) {
             return res.status(404).json({
@@ -154,6 +154,7 @@ export const searchRestaurant = async (req: Request, res: Response) => {
                 { city: { $regex: searchText, $options: 'i' } },
                 { country: { $regex: searchText, $options: 'i' } },
                 { cuisines: { $regex: searchText, $options: 'i' } },
+
             ]
             dishes.$or = [
                 { name: { $regex: searchText, $options: 'i' } },
@@ -165,7 +166,10 @@ export const searchRestaurant = async (req: Request, res: Response) => {
         if (searchQuery) {
             query.$or = [
                 { restaurantName: { $regex: searchQuery, $options: 'i' } },
-                { cuisines: { $regex: searchQuery, $options: 'i' } }
+                { cuisines: { $regex: searchQuery, $options: 'i' } },
+                { city: { $regex: searchQuery, $options: 'i' } },
+                { country: { $regex: searchQuery, $options: 'i' } },
+
             ]
             dishes.$or = [
                 { name: { $regex: searchQuery, $options: 'i' } },
@@ -178,6 +182,9 @@ export const searchRestaurant = async (req: Request, res: Response) => {
         // console.log(dishes);
 
         // ["momos", "burger"]
+        query.$and = [
+            { currentStatus: "active" }
+        ]
         if (selectedCuisines.length > 0) {
             query.cuisines = { $in: selectedCuisines }
             dishes.cuisines = { $in: selectedCuisines }
@@ -186,12 +193,26 @@ export const searchRestaurant = async (req: Request, res: Response) => {
         console.log(dishes);
 
         const restaurants = await Restaurant.find(query);
-        const dishesList = await Menu.find(dishes)
-            .populate({
-                path: 'restaurant',
-                match: { _id: { $exists: true } }, // Only populate if restaurant ID exists
-                select: 'restaurantName city country cuisines' // Select specific fields
-            });
+        const dishesList = await Menu.aggregate([
+            {
+                $lookup: {
+                    from: 'restaurants', // collection name of Restaurant model (usually pluralized)
+                    localField: 'restaurant',
+                    foreignField: '_id',
+                    as: 'restaurant',
+                },
+            },
+            {
+                $unwind: '$restaurant',
+            },
+            {
+                $match: {
+                    'restaurant.currentStatus': 'active',
+                    ...dishes, // apply your other filters here
+                },
+            }
+        ]);
+
 
         return res.status(200).json({
             success: true,
@@ -231,19 +252,18 @@ export const getSingleRestaurant = async (req: Request, res: Response) => {
 
 export const blockAccount = async (req: Request, res: Response) => {
     try {
-        const userEmailId = req.body.emailId;
-        if (!userEmailId) {
-            return res.status(400).json({ message: "Email ID is required" });
+        const resId = req.body.id;
+        if (!resId) {
+            return res.status(400).json({ message: "Restaurant ID is required" });
         }
-        const user = await User.findOne({ email: userEmailId });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        const restaurant = await Restaurant.findById(resId);
+        if (!restaurant) {
+            return res.status(404).json({ message: "Restaurant not found" });
         }
-        // Block the user account by setting a flag or removing the user
-        user.currentStatus = "blocked";
-        await user.save();
+        // Block the restaurant account by setting the status to blocked
+        restaurant.currentStatus = "blocked";
+        await restaurant.save();
         res.status(200).json({ message: "Account blocked successfully" });
-
 
     } catch (error) {
         console.error("Error blocking account:", error);
@@ -253,19 +273,19 @@ export const blockAccount = async (req: Request, res: Response) => {
 
 export const unBlockAccount = async (req: Request, res: Response) => {
     try {
-        const userEmailId = req.body.emailId;
-        if (!userEmailId) {
-            return res.status(400).json({ message: "Email ID is required" });
-        }
-        const user = await User.findOne({ email: userEmailId });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        const resId = req.body.id;
+        if (!resId) {
+            return res.status(400).json({ message: "Restaurant ID is required" });
         }
 
-        user.currentStatus = "active";
-        await user.save();
-        res.status(200).json({ message: "Account activated successfully" });
-
+        const restaurant = await Restaurant.findById(resId);
+        if (!restaurant) {
+            return res.status(404).json({ message: "Restaurant not found" });
+        }
+        // Unblock the restaurant account by setting the status to active
+        restaurant.currentStatus = "active";
+        await restaurant.save();
+        res.status(200).json({ message: "Account unblocked successfully" });
 
     } catch (error) {
         console.error("Error in activating account:", error);
@@ -299,6 +319,44 @@ export const unBlockAccount = async (req: Request, res: Response) => {
 // };
 
 
+export const getAllBlockedRestaurants = async (req: Request, res: Response) => {
+    try {
+        // Step 1: Fetch the requesting user
+        const loggedInUser = await User.findById(req.id);
+        if (!loggedInUser) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        // Step 2: Fetch all restaurants with populated user data
+        const restaurants = await Restaurant.find({
+            currentStatus: "blocked" // Only fetch active restaurants
+        }).populate<{ user: IUser }>('user');
+
+        // Step 3: If not superadmin, filter out restaurants with blocked users
+        let filteredRestaurants = restaurants;
+        if (loggedInUser.role !== "superadmin") {
+            filteredRestaurants = restaurants.filter(
+                (restaurant) => restaurant.user && restaurant.currentStatus !== "blocked"
+            );
+        }
+
+        if (filteredRestaurants.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No restaurants found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            restaurants: filteredRestaurants
+        });
+    } catch (error) {
+        console.error("Error fetching restaurants:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
 export const getAllRestaurants = async (req: Request, res: Response) => {
     try {
         // Step 1: Fetch the requesting user
@@ -308,13 +366,15 @@ export const getAllRestaurants = async (req: Request, res: Response) => {
         }
 
         // Step 2: Fetch all restaurants with populated user data
-        const restaurants = await Restaurant.find().populate<{ user: IUser }>('user');
+        const restaurants = await Restaurant.find({
+            currentStatus: "active" // Only fetch active restaurants
+        }).populate<{ user: IUser }>('user');
 
         // Step 3: If not superadmin, filter out restaurants with blocked users
         let filteredRestaurants = restaurants;
         if (loggedInUser.role !== "superadmin") {
             filteredRestaurants = restaurants.filter(
-                (restaurant) => restaurant.user && restaurant.user.currentStatus !== "blocked"
+                (restaurant) => restaurant.user && restaurant.currentStatus !== "blocked"
             );
         }
 

@@ -16,12 +16,13 @@ type CartItems = {
 }
 
 export interface IOrder extends Document {
+    _id: mongoose.Schema.Types.ObjectId;
     user: mongoose.Schema.Types.ObjectId;
     restaurant: mongoose.Schema.Types.ObjectId;
     deliveryDetails: DeliveryDetails,
-    cartItems: CartItems;
+    cartItems: CartItems[];
     totalAmount: number;
-    status: "pending" | "confirmed" | "preparing" | "outfordelivery" | "delivered"
+    status: "pending" | "confirmed" | "preparing" | "outfordelivery" | "delivered" | "failed" | "cancelled" | "cart";
 }
 
 const orderSchema = new mongoose.Schema<IOrder>({
@@ -35,26 +36,42 @@ const orderSchema = new mongoose.Schema<IOrder>({
         ref: 'Restaurant',
         required: true
     },
-    deliveryDetails:{
-        email:{type:String, required:true},
-        name:{type:String, required:true},
-        address:{type:String, required:true},
-        city:{type:String, required:true},
+    deliveryDetails: {
+        email: {
+            type: String,
+            // not required if status is cart
+            required: function () { return this.status !== "cart"; }
+        },
+        name: {
+            type: String,
+            // not required if status is cart
+            required: function () { return this.status !== "cart"; }
+        },
+        address: {
+            type: String,
+            // not required if status is cart
+            required: function () { return this.status !== "cart"; }
+        },
+        city: {
+            type: String,
+            // not required if status is cart
+            required: function () { return this.status !== "cart"; }
+        },
     },
-    cartItems:[
+    cartItems: [
         {
-            menuId:{type:String, required:true},
-            name:{type:String, required:true},
-            image:{type:String, required:true},
-            price:{type:Number, required:true},
-            quantity:{type:Number, required:true},
+            menuId: { type: String, required: true },
+            name: { type: String, required: true },
+            image: { type: String, required: true },
+            price: { type: Number, required: true },
+            quantity: { type: Number, required: true },
         }
     ],
-    totalAmount:Number,
-    status:{
-        type:String,
-        enum:["pending" , "confirmed" , "preparing" , "outfordelivery" , "delivered"],
-        required:true
+    totalAmount: Number,
+    status: {
+        type: String,
+        enum: ["pending", "confirmed", "preparing", "outfordelivery", "delivered", "failed", "cancelled", "cart"],
+        required: true
     }
 
 

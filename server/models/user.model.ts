@@ -16,7 +16,6 @@ export interface IUser {
     verificationToken?: string;
     verificationTokenExpiresAt?: Date
     role?: "user" | "admin" | "superadmin";
-    currentStatus?: "active" | "blocked" // e.g., "active", "inactive"
 }
 
 export interface IUserDocument extends IUser, Document {
@@ -78,11 +77,6 @@ const userSchema = new mongoose.Schema<IUserDocument>({
     isVerified: {
         type: Boolean,
         default: false
-    },
-    currentStatus: {
-        type: String,
-        enum: ["active", "blocked"],
-        default: "active"
     },
     resetPasswordToken: String,
     resetPasswordTokenExpiresAt: Date,

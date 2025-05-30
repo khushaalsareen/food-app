@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { Restaurant } from "../models/restaurant.model";
 import { Order } from "../models/order.model";
 import Stripe from "stripe";
+import { User } from "../models/user.model";
+import { Menu } from "../models/menu.model";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -35,6 +37,203 @@ export const getOrders = async (req: Request, res: Response) => {
     }
 }
 
+export const addToCart = async (req: Request, res: Response) => {
+    try {
+        const { userId, restaurantId, menuId, quantity } = req.body;
+
+        if (!userId || !restaurantId || !menuId || !quantity) {
+            return res.status(400).json({ success: false, message: "Invalid request" });
+        }
+        // find the restaurant
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) {
+            return res.status(404).json({ success: false, message: "Restaurant not found" });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const menu = await Menu.findById(menuId);
+        if (!menu) {
+            return res.status(404).json({ success: false, message: "Menu item not found" });
+        }
+
+        // check if the user already has a cart for this restaurant
+        const existingOrder = await Order.findOne({ user: userId, restaurant: restaurantId, status: "cart" });
+        if (existingOrder) {
+            // if the order exists, update the cart items
+            const existingCartItem = Array.isArray(existingOrder.cartItems)
+                ? existingOrder.cartItems.find((item: any) => item.menuId.toString() === menuId)
+                : undefined;
+            if (existingCartItem) {
+                // if the item already exists in the cart, update the quantity
+                existingCartItem.quantity += quantity;
+            } else {
+                existingOrder.cartItems.push({
+                    menuId: menu._id as string,
+                    name: menu.name,
+                    image: menu.image,
+                    price: menu.price,
+                    quantity
+                });
+            }
+            await existingOrder.save();
+        } else {
+            // if no order exists, create a new one
+            const newOrder = new Order({
+                user: userId,
+                restaurant: restaurantId,
+                cartItems: [{
+                    menuId: menu._id,
+                    name: menu.name,
+                    image: menu.image,
+                    price: menu.price,
+                    quantity
+                }],
+                status: "cart"
+            });
+            await newOrder.save();
+        }
+        return res.status(200).json({ success: true, message: "Item added to cart successfully" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal server error" })
+
+    }
+}
+
+export const removeItemFromCart = async (req: Request, res: Response) => {
+    try {
+        const { userId, restaurantId, menuId, quantity } = req.body;
+
+        if (!userId || !restaurantId || !menuId) {
+            return res.status(400).json({ success: false, message: "Invalid request" });
+        }
+
+        // find the order for the user and restaurant
+        const order = await Order.findOne({ user: userId, restaurant: restaurantId, status: "cart" });
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Cart not found" });
+        }
+
+        if (!quantity || quantity <= 0) {
+            // remove the item from the cart
+            order.cartItems = order.cartItems.filter((item: any) => item.menuId.toString() !== menuId);
+            await order.save();
+
+            return res.status(200).json({ success: true, message: "Item removed from cart successfully" });
+        }
+        else {
+            // make cartItem quantity as quantity 
+            const cartItem = order.cartItems.find((item: any) => item.menuId.toString() === menuId);
+            if (!cartItem) {
+                return res.status(404).json({ success: false, message: "Item not found in cart" });
+            }
+            if (cartItem.quantity < quantity) {
+                return res.status(400).json({ success: false, message: "Quantity exceeds available stock" });
+            }
+            cartItem.quantity = quantity;
+            await order.save();
+            return res.status(200).json({ success: true, message: "Item quantity updated successfully" });
+
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal server error" })
+
+    }
+}
+
+export const clearCart = async (req: Request, res: Response) => {
+    try {
+        const { userId, restaurantId } = req.body;
+
+        if (!userId || !restaurantId) {
+            return res.status(400).json({ success: false, message: "Invalid request" });
+        }
+
+        // find the order for the user and restaurant
+        const order = await Order.findOne({ user: userId, restaurant: restaurantId, status: "cart" });
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Cart not found" });
+        }
+
+        // clear the cart items
+        order.cartItems = [];
+        await order.save();
+
+        return res.status(200).json({ success: true, message: "Cart cleared successfully" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal server error" })
+
+    }
+}
+
+export const getCart = async (req: Request, res: Response) => {
+    try {
+        const userId = req.id;
+
+        // Only get items with status "cart"
+        const carts = await Order.find({
+            user: userId,
+            status: "cart"  // Add this filter
+        })
+            .populate({
+                path: 'restaurant',
+                select: 'restaurantName'
+            });
+
+        if (!carts || carts.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Cart is empty"
+            });
+        }
+
+        // Flatten cart items and add restaurant info
+        // const flattenedCart = carts.flatMap(cart =>
+        //     cart.cartItems.map(item => ({
+        //         _id: item._id,
+        //         name: item.name,
+        //         description: item.description || "",
+        //         price: item.price,
+        //         image: item.image,
+        //         restaurant: cart.restaurant._id,
+        //         quantity: item.quantity,
+        //         restName: cart.restaurant.restaurantName
+        //     }))
+        // );
+
+        return res.status(200).json({
+            success: true,
+            cart: carts.map(cart => ({
+                _id: cart._id,
+                restaurantId: (cart.restaurant as any)?._id,
+                restaurantName: (cart.restaurant as any)?.restaurantName || "Unknown Restaurant",
+                cartItems: cart.cartItems.map(item => ({
+                    menuId: item.menuId,
+                    name: item.name,
+                    image: item.image,
+                    price: item.price,
+                    quantity: item.quantity
+                })),
+                deliveryDetails: cart.deliveryDetails || {},
+                status: cart.status
+            }))
+        });
+
+    } catch (error) {
+        console.error("Error fetching cart:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};
+
 export const createCheckoutSession = async (req: Request, res: Response) => {
     try {
         const checkoutSessionRequest: CheckoutSessionRequest = req.body;
@@ -45,13 +244,26 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
                 message: "Restaurant not found."
             })
         };
-        const order: any = new Order({
-            restaurant: restaurant._id,
+        // const order: any = new Order({
+        //     restaurant: restaurant._id,
+        //     user: req.id,
+        //     deliveryDetails: checkoutSessionRequest.deliveryDetails,
+        //     cartItems: checkoutSessionRequest.cartItems,
+        //     status: "pending"
+        // });
+
+        //  get order restaurant and user
+        const order = await Order.findOne({
+            restaurant: checkoutSessionRequest.restaurantId,
             user: req.id,
-            deliveryDetails: checkoutSessionRequest.deliveryDetails,
-            cartItems: checkoutSessionRequest.cartItems,
-            status: "pending"
+            status: "cart"
         });
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Cart not found."
+            })
+        }
 
         // line items
         const menuItems = restaurant.menus;
@@ -74,6 +286,12 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
         if (!session.url) {
             return res.status(400).json({ success: false, message: "Error while creating session" });
         }
+        // Update order with session details
+        order.status = "pending";
+        order.totalAmount = session.amount_total ? session.amount_total / 100 : 0; // Convert to rupees
+
+        order.deliveryDetails = checkoutSessionRequest.deliveryDetails;
+
         await order.save();
         return res.status(200).json({
             session
@@ -113,7 +331,8 @@ export const stripeWebhook = async (req: Request, res: Response) => {
         try {
             const session = event.data.object as Stripe.Checkout.Session;
             const order = await Order.findById(session.metadata?.orderId);
-
+            console.log("Order ID:", session.metadata);
+            console.log("Session Amount Total:", session);
             if (!order) {
                 return res.status(404).json({ message: "Order not found" });
             }
@@ -130,6 +349,7 @@ export const stripeWebhook = async (req: Request, res: Response) => {
             return res.status(500).json({ message: "Internal Server Error" });
         }
     }
+
     // Send a 200 response to acknowledge receipt of the event
     res.status(200).send();
 };

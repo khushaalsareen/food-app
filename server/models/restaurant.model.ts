@@ -11,6 +11,7 @@ export interface IRestaurant {
     menus: mongoose.Schema.Types.ObjectId[];
     rating?: number;
     noOfRatings?: number; // Optional field for number of ratings
+    currentStatus?: "active" | "blocked"; // Optional field for current status of the restaurant
 }
 
 export interface IRestaurantRating {
@@ -58,7 +59,12 @@ const restaurantSchema = new mongoose.Schema<IRestaurantDocument>({
     noOfRatings: {
         type: Number,
         default: 0 // Default number of ratings is set to 0
-    }
+    },
+    currentStatus: {
+        type: String,
+        enum: ["active", "blocked"],
+        default: "active"
+    },
 }, { timestamps: true });
 
 const restaurantRatingSchema = new mongoose.Schema<IRestaurantRating>({

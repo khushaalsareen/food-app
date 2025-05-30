@@ -7,6 +7,7 @@ export type MenuItem = {
     description: string;
     price: number;
     image: string;
+    restaurant: string;
 }
 export type Restaurant = {
     _id: string;
@@ -18,28 +19,31 @@ export type Restaurant = {
     cuisines: string[];
     menus: MenuItem[];
     imageUrl: string;
+    currentStatus: "active" | "blocked";
+    rating: number;
+    noOfRatings: number;
 }
 
 export type SearchedRestaurant = {
-    data:Restaurant[]
+    data: Restaurant[]
 }
 
 export type RestaurantState = {
     loading: boolean;
     restaurant: Restaurant | null;
     searchedRestaurant: SearchedRestaurant | null;
-    appliedFilter:string[];
+    appliedFilter: string[];
     singleRestaurant: Restaurant | null,
-    restaurantOrder:Orders[],
+    restaurantOrder: Orders[],
     createRestaurant: (formData: FormData) => Promise<void>;
     getRestaurant: () => Promise<void>;
     updateRestaurant: (formData: FormData) => Promise<void>;
     searchRestaurant: (searchText: string, searchQuery: string, selectedCuisines: any) => Promise<void>;
     addMenuToRestaurant: (menu: MenuItem) => void;
     updateMenuToRestaurant: (menu: MenuItem) => void;
-    setAppliedFilter: (value:string) => void;
+    setAppliedFilter: (value: string) => void;
     resetAppliedFilter: () => void;
-    getSingleRestaurant: (restaurantId:string) => Promise<void>;
+    getSingleRestaurant: (restaurantId: string) => Promise<void>;
     getRestaurantOrders: () => Promise<void>;
-    updateRestaurantOrder: (orderId:string, status:string) => Promise<void>;
+    updateRestaurantOrder: (orderId: string, status: string) => Promise<void>;
 }
