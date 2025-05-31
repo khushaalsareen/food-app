@@ -25,6 +25,7 @@ export const addMenu = async (req: Request, res: Response) => {
         const restaurant = await Restaurant.findOne({ user: req.id });
         if (restaurant) {
             (restaurant.menus as mongoose.Schema.Types.ObjectId[]).push(menu._id);
+            restaurant.cuisines.push(name); // Assuming you want to add the menu name to cuisines
             await restaurant.save();
         }
         menu.restaurant = restaurant?._id;

@@ -234,8 +234,6 @@ export const getSingleRestaurant = async (req: Request, res: Response) => {
         const restaurantId = req.params.id;
         const restaurant = await Restaurant.findById(restaurantId).populate({
             path: 'menus',
-            match: { quantity: { $gt: 0 } },
-            options: { createdAt: -1 }
         });
         if (!restaurant) {
             return res.status(404).json({

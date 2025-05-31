@@ -26,7 +26,7 @@ type CheckoutSessionRequest = {
 
 export const getOrders = async (req: Request, res: Response) => {
     try {
-        const orders = await Order.find({ user: req.id }).populate('user').populate('restaurant');
+        const orders = await Order.find({ user: req.id, status: { $ne: "cart" } }).populate('user').populate('restaurant');
         return res.status(200).json({
             success: true,
             orders
