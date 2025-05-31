@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Plus } from "lucide-react";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import EditMenu from "./EditMenu";
 import { MenuFormSchema, menuSchema } from "@/schema/menuSchema";
 import { useMenuStore } from "@/store/useMenuStore";
@@ -29,75 +29,73 @@ const AddMenu = () => {
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [selectedMenu, setSelectedMenu] = useState<any>();
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
+
   const { loading, createMenu } = useMenuStore();
-  const { restaurant,getSingleRestaurant } = useRestaurantStore();
+  const { singleRestaurant, getSingleRestaurant } = useRestaurantStore();
 
-  // const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value, type } = e.target;
-  //   setInput({ ...input, [name]: type === "number" ? Number(value) : value });
-  // };
-const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const { name, value } = e.target;
+  const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setInput((prev) => ({
+      ...prev,
+      [name]: name === "price" ? Number(value) : value,
+    }));
+  };
 
-  setInput((prev) => ({
-    ...prev,
-    [name]: name === "price" ? Number(value) : value,
-  }));
-};
+  const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
- const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  const result = menuSchema.safeParse(input);
-  if (!result.success) {
-    const fieldErrors = result.error.formErrors.fieldErrors;
-    setError(fieldErrors as Partial<MenuFormSchema>);
-    return;
-  }
-
-  try {
-    const formData = new FormData();
-    formData.append("name", input.name);
-    formData.append("description", input.description);
-    formData.append("price", input.price.toString());
-    formData.append("quantity", input.quantity.toString());
-
-    if (input.image) {
-      formData.append("image", input.image);
+    const result = menuSchema.safeParse(input);
+    if (!result.success) {
+      const fieldErrors = result.error.formErrors.fieldErrors;
+      setError(fieldErrors as Partial<MenuFormSchema>);
+      return;
     }
 
-    await createMenu(formData);
+    try {
+      const formData = new FormData();
+      formData.append("name", input.name);
+      formData.append("description", input.description);
+      formData.append("price", input.price.toString());
+      formData.append("quantity", input.quantity.toString());
 
-    if (restaurant?._id) {
-      await getSingleRestaurant(restaurant._id);
+      if (input.image) {
+        formData.append("image", input.image);
+      }
+
+      await createMenu(formData);
+
+      if (restaurant?._id) {
+        await getSingleRestaurant(restaurant._id);
+      }
+
+      setInput({
+        name: "",
+        description: "",
+        price: 0,
+        image: undefined,
+        quantity: "1",
+      });
+      setOpen(false);
+      setError({});
+    } catch (error) {
+      console.log(error);
     }
+  };
 
-    // ✅ Reset form and close dialog
-    setInput({
-      name: "",
-      description: "",
-      price: 0,
-      image: undefined,
-      quantity: "1",
-    });
-    setError({});
-    setOpen(false); // close the dialog
+  useEffect(() => {
+    getSingleRestaurant(restaurant._id);
+  }, []);
 
-  } catch (error) {
-    console.log(error);
-  }
-};
-
+  console.log(restaurant);
   return (
-    <div className="max-w-6xl mx-auto my-10">
-      <div className="flex justify-between">
-        <h1 className="font-bold md:font-extrabold text-lg md:text-2xl">
-          Available Menus
-        </h1>
+    <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-bold">Available Menus</h1>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger>
+          <DialogTrigger asChild>
             <Button className="bg-orange hover:bg-hoverOrange">
-              <Plus className="mr-2" />
-              Add Menus
+              <Plus className="mr-2 h-4 w-4" />
+              Add Menu
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -108,66 +106,51 @@ const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={submitHandler} className="space-y-4">
-              <div>
-                <Label>Name</Label>
-                <Input
-                  type="text"
-                  name="name"
-                  value={input.name}
-                  onChange={changeEventHandler}
-                  placeholder="Enter menu name"
-                />
-                {error && (
-                  <span className="text-xs font-medium text-red-600">
-                    {error.name}
-                  </span>
-                )}
-              </div>
-              <div>
-                <Label>Description</Label>
-                <Input
-                  type="text"
-                  name="description"
-                  value={input.description}
-                  onChange={changeEventHandler}
-                  placeholder="Enter menu description"
-                />
-                {error && (
-                  <span className="text-xs font-medium text-red-600">
-                    {error.description}
-                  </span>
-                )}
-              </div>
-              <div>
-                <Label>Price in (Rupees)</Label>
-                <Input
-                  type="number"
-                  name="price"
-                  value={input.price}
-                  onChange={changeEventHandler}
-                  placeholder="Enter menu price"
-                />
-                {error && (
-                  <span className="text-xs font-medium text-red-600">
-                    {error.price}
-                  </span>
-                )}
-              </div>
-              <div>
-                <Label>Availability</Label>
-                <Input
-                  type="text"
-                  name="quantity"
-                  value={input.quantity}
-                  onChange={changeEventHandler}
-                  placeholder="Enter item quantity"
-                />
-                {error && (
-                  <span className="text-xs font-medium text-red-600">
-                    {error.quantity}
-                  </span>
-                )}
+              {[
+                {
+                  label: "Name",
+                  name: "name",
+                  type: "text",
+                  placeholder: "Enter menu name",
+                },
+                {
+                  label: "Description",
+                  name: "description",
+                  type: "text",
+                  placeholder: "Enter menu description",
+                },
+                {
+                  label: "Price (in ₹)",
+                  name: "price",
+                  type: "number",
+                  placeholder: "Enter menu price",
+                },
+                {
+                  label: "Quantity",
+                  name: "quantity",
+                  type: "text",
+                  placeholder: "Enter availability quantity",
+                },
+              ].map((field) => (
+                <div key={field.name}>
+                  <Label>{field.label}</Label>
+                  <Input
+                    type={field.type}
+                    name={field.name}
+                    value={
+                      input[field.name as keyof typeof input] as string | number
+                    }
+                    onChange={changeEventHandler}
+                    placeholder={field.placeholder}
+                  />
+                  {error[field.name as keyof typeof error] && (
+                    <span className="text-xs font-medium text-red-600">
+                      {error[field.name as keyof typeof error]}
+                    </span>
+                  )}
                 </div>
+              ))}
+
               <div>
                 <Label>Upload Menu Image</Label>
                 <Input
@@ -180,58 +163,70 @@ const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
                     })
                   }
                 />
-                {error && (
+                {error.image?.name && (
                   <span className="text-xs font-medium text-red-600">
                     {error.image?.name}
                   </span>
                 )}
               </div>
+
               <DialogFooter className="mt-5">
-                {loading ? (
-                  <Button disabled className="bg-orange hover:bg-hoverOrange">
-                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                    Please wait
-                  </Button>
-                ) : (
-                  <Button className="bg-orange hover:bg-hoverOrange">
-                    Submit
-                  </Button>
-                )}
+                <Button
+                  type="submit"
+                  className="bg-orange hover:bg-hoverOrange"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Please wait
+                    </>
+                  ) : (
+                    "Submit"
+                  )}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
       </div>
-      {restaurant?.menus?.map((menu: any, idx: number) => (
-        <div key={idx} className="mt-6 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
+
+      <div className="space-y-6">
+        {singleRestaurant?.menus?.map((menu: any, idx: number) => (
+          <div
+            key={idx}
+            className="flex flex-col md:flex-row items-center gap-4 p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-900"
+          >
             <img
               src={menu.image}
-              alt=""
-              className="md:h-24 md:w-24 h-16 w-full object-cover rounded-lg"
+              alt={menu.name}
+              className="h-24 w-24 object-cover rounded-md"
             />
-            <div className="flex-1">
-              <h1 className="text-lg font-semibold text-gray-800">
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
                 {menu.name}
-              </h1>
-              <p className="text-sm tex-gray-600 mt-1">{menu.description}</p>
-              <h2 className="text-md font-semibold mt-2">
-                Price: <span className="text-[#D19254]">80</span>
               </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                {menu.description}
+              </p>
+              <p className="text-md font-medium text-[#D19254] mt-2">
+                ₹ {menu.price}
+              </p>
             </div>
             <Button
+              size="sm"
+              className="bg-orange hover:bg-hoverOrange"
               onClick={() => {
                 setSelectedMenu(menu);
                 setEditOpen(true);
               }}
-              size={"sm"}
-              className="bg-orange hover:bg-hoverOrange mt-2"
             >
               Edit
             </Button>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+
       <EditMenu
         selectedMenu={selectedMenu}
         editOpen={editOpen}

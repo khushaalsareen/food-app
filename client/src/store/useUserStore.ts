@@ -24,6 +24,7 @@ type UserState = {
     isAuthenticated: boolean;
     isCheckingAuth: boolean;
     loading: boolean;
+    role: "user" | "admin" | "superadmin" | null;
     signup: (input: SignupInputState) => Promise<boolean>;
     login: (input: LoginInputState) => Promise<void>;
     verifyEmail: (verificationCode: string) => Promise<void>;
@@ -40,6 +41,7 @@ export const useUserStore = create<UserState>()(persist((set) => ({
     isCheckingAuth: true,
     loading: false,
     // signup api implementation
+    role: null,
     signup: async (input: SignupInputState) => {
         try {
             set({ loading: true });

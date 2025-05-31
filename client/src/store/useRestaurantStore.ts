@@ -139,6 +139,7 @@ export const useRestaurantStore = create<RestaurantState>()(persist((set, get) =
         try {
             const response = await axios.get(`${API_END_POINT}/${restaurantId}`);
             if (response.data.success) {
+                console.log(response.data);
                 set({ singleRestaurant: response.data.restaurant })
             }
         } catch (error) {

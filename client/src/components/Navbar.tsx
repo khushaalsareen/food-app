@@ -45,7 +45,7 @@ const Navbar = () => {
   const { user, loading, logout } = useUserStore();
 
   // Initialize cart store with user ID or empty string if no user
-   const cartStore = useCartStore();
+  const cartStore = useCartStore();
   const cart = cartStore.cart;
   const { setTheme } = useThemeStore();
 
@@ -57,11 +57,10 @@ const Navbar = () => {
         </Link>
         <div className="hidden md:flex items-center gap-10">
           <div className="hidden md:flex items-center gap-6">
-             <Link to="/restaurants">Restaurants</Link>
+            <Link to="/restaurants">Restaurants</Link>
             <Link to="/">Home</Link>
             <Link to="/profile">Profile</Link>
-            <Link to="/order/status">Order</Link>
-
+            {user?.role === "user" && <Link to="/order/status">Order</Link>}
             {user?.role === "admin" && (
               <Menubar>
                 <MenubarMenu>
@@ -99,17 +98,20 @@ const Navbar = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link to="/cart" className="relative cursor-pointer">
-              <ShoppingCart />
-              {cart.length > 0 && (
-                <Button
-                  size={"icon"}
-                  className="absolute -inset-y-3 left-2 text-xs rounded-full w-4 h-4 bg-red-500 hover:bg-red-500"
-                >
-                  {cart.length}
-                </Button>
-              )}
-            </Link>
+
+            {user?.role === "user" && (
+              <Link to="/cart" className="relative cursor-pointer">
+                <ShoppingCart />
+                {cart.length > 0 && (
+                  <Button
+                    size={"icon"}
+                    className="absolute -inset-y-3 left-2 text-xs rounded-full w-4 h-4 bg-red-500 hover:bg-red-500"
+                  >
+                    {cart.length}
+                  </Button>
+                )}
+              </Link>
+            )}
             <Avatar>
               <AvatarImage src={user?.profilePicture} alt="profilephoto" />
               <AvatarFallback>CN</AvatarFallback>
@@ -222,12 +224,12 @@ const MobileNavbar = () => {
                 <span>Restaurant</span>
               </Link>
               <Link
-  to="/restaurants"
-  className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
->
-  <UtensilsCrossed />
-  <span>Restaurants</span>
-</Link>
+                to="/restaurants"
+                className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
+              >
+                <UtensilsCrossed />
+                <span>Restaurants</span>
+              </Link>
               <Link
                 to="/admin/orders"
                 className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
