@@ -45,35 +45,48 @@ const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
   }));
 };
 
-  const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const result = menuSchema.safeParse(input);
-    if (!result.success) {
-      const fieldErrors = result.error.formErrors.fieldErrors;
-      setError(fieldErrors as Partial<MenuFormSchema>);
-      return;
+ const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  const result = menuSchema.safeParse(input);
+  if (!result.success) {
+    const fieldErrors = result.error.formErrors.fieldErrors;
+    setError(fieldErrors as Partial<MenuFormSchema>);
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("name", input.name);
+    formData.append("description", input.description);
+    formData.append("price", input.price.toString());
+    formData.append("quantity", input.quantity.toString());
+
+    if (input.image) {
+      formData.append("image", input.image);
     }
-    // api ka kaam start from here
-    try {
-      const formData = new FormData();
-      formData.append("name", input.name);
-      formData.append("description", input.description);
-      formData.append("price", input.price.toString());
-      formData.append("quantity", input.quantity.toString());
 
-      if(input.image){
-        formData.append("image", input.image);
-      }
-      await createMenu(formData);
+    await createMenu(formData);
 
-      if (restaurant?._id) {
+    if (restaurant?._id) {
       await getSingleRestaurant(restaurant._id);
     }
 
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    // ✅ Reset form and close dialog
+    setInput({
+      name: "",
+      description: "",
+      price: 0,
+      image: undefined,
+      quantity: "1",
+    });
+    setError({});
+    setOpen(false); // close the dialog
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+
   return (
     <div className="max-w-6xl mx-auto my-10">
       <div className="flex justify-between">
