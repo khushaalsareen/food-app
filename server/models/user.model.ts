@@ -32,13 +32,13 @@ const userSchema = new mongoose.Schema<IUserDocument>({
         type: String,
         required: true,
         unique: true,
-        // validate: {
-        //     validator: function (email: string) {
-        //         return email.endsWith("@nitj.ac.in")
-        //     },
-        //     message: "Email must end with @nitj.ac.in"
-        // },
-        // match: [/@nitj\.ac\.in$/, "Email must end with @nitj.ac.in"]
+        validate: {
+            validator: function (email: string) {
+                return email.endsWith("@nitj.ac.in")
+            },
+            message: "Email must end with @nitj.ac.in"
+        },
+        match: [/@nitj\.ac\.in$/, "Email must end with @nitj.ac.in"]
     },
     password: {
         type: String,

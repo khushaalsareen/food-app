@@ -64,8 +64,8 @@ const AddMenu = () => {
 
       await createMenu(formData);
 
-      if (restaurant?._id) {
-        await getSingleRestaurant(restaurant._id);
+      if (singleRestaurant?._id) {
+        await getSingleRestaurant(singleRestaurant._id);
       }
 
       setInput({
@@ -83,10 +83,10 @@ const AddMenu = () => {
   };
 
   useEffect(() => {
-    getSingleRestaurant(restaurant._id);
+    getSingleRestaurant(singleRestaurant?._id);
   }, []);
 
-  console.log(restaurant);
+  // console.log(restaurant);
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       <div className="flex items-center justify-between mb-8">

@@ -1,6 +1,6 @@
 
 export const generateVerificationCode = (length = 6): string => {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const characters = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789';
     let verificationCode = ''; // 6 digit ka code isi me store hoga
     const charactersLength = characters.length;
   
