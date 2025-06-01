@@ -18,11 +18,11 @@ const AvailableMenu = ({
       <h1 className="text-xl md:text-2xl font-extrabold mb-6">
         Available Menus
       </h1>
-      <div className="grid md:grid-cols-3 space-y-4 md:space-y-0">
+      <div className="grid md:grid-cols-3 gap-4">
         {menus.map((menu: MenuItem) => (
           <Card
             key={menu._id}
-            className="max-w-xs mx-auto shadow-lg rounded-lg overflow-hidden"
+            className="w-full shadow-lg rounded-lg overflow-hidden"
           >
             <img src={menu.image} alt="" className="w-full h-40 object-cover" />
             <CardContent className="p-4">
