@@ -19,6 +19,7 @@ const Restaurant = () => {
     imageFile: undefined,
   });
   const [errors, setErrors] = useState<Partial<RestaurantFormSchema>>({});
+  const [heading, setHeading] = useState("Add Restaurant");
   const {
     loading,
     restaurant,
@@ -80,6 +81,7 @@ const Restaurant = () => {
             : [],
           imageFile: undefined,
         });
+        setHeading("Update Restaurant")
       };
       }
     fetchRestaurant();
@@ -91,7 +93,7 @@ const Restaurant = () => {
     <div className="max-w-6xl mx-auto my-10">
       <div>
         <div>
-          <h1 className="font-extrabold text-2xl mb-5">Add Restaurants</h1>
+          <h1 className="font-extrabold text-2xl mb-5">{heading}</h1>
           <form onSubmit={submitHandler}>
             <div className="md:grid grid-cols-2 gap-6 space-y-2 md:space-y-0">
               {/* Restaurant Name  */}
