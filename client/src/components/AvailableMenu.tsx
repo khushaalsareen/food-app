@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardFooter } from "./ui/card";
 import { useCartStore } from "@/context/CartProvider"; // Use the hook here
 import { useUserStore } from "@/store/useUserStore";
+import { toast } from 'sonner';
 
 const AvailableMenu = ({
   menus,
@@ -39,6 +40,9 @@ const AvailableMenu = ({
                 <Button
                   onClick={() => {
                     addToCart(menu, restName);
+                    toast.success("Added to cart", {
+                      description: `${menu.name} has been added.`,
+                    });
                   }}
                   className="w-full bg-orange hover:bg-hoverOrange"
                 >
