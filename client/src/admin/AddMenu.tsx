@@ -83,7 +83,7 @@ const AddMenu = () => {
   };
 
   useEffect(() => {
-    getSingleRestaurant(singleRestaurant?._id);
+    getSingleRestaurant(singleRestaurant?._id || "");
   }, []);
 
   // console.log(restaurant);

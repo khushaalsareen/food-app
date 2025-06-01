@@ -5,6 +5,7 @@ import uploadImageOnCloudinary from "../utils/imageUpload";
 import { Order } from "../models/order.model";
 import { IUser, User } from "../models/user.model";
 import { Menu } from "../models/menu.model";
+import { sendEmail } from "../mailtrap/email";
 
 export const createRestaurant = async (req: Request, res: Response) => {
     try {
@@ -126,6 +127,188 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
             })
         }
         order.status = status;
+        // get email from order from userId
+        const user = await User.findById(order.user);
+        const email = user?.email || null; // Use optional chaining to safely access email
+        if (email) {
+            const htmlEmailTemplate = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Order Status Update</title>
+                <style>
+                    body { 
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                        line-height: 1.6; 
+                        margin: 0; 
+                        padding: 0; 
+                        background-color: #f8f9fa; 
+                    }
+                    .container { 
+                        max-width: 600px; 
+                        margin: 20px auto; 
+                        background: white; 
+                        border-radius: 12px; 
+                        overflow: hidden;
+                        box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+                    }
+                    .header { 
+                        background: linear-gradient(135deg, #ff6b35, #f7931e);
+                        color: white;
+                        text-align: center; 
+                        padding: 30px 20px;
+                    }
+                    .logo { 
+                        font-size: 28px; 
+                        font-weight: bold; 
+                        margin-bottom: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                    }
+                    .content {
+                        padding: 40px 30px;
+                    }
+                    .status-update {
+                        text-align: center;
+                        margin: 30px 0;
+                    }
+                    .status-badge { 
+                        display: inline-block; 
+                        padding: 12px 24px; 
+                        background: linear-gradient(135deg, #28a745, #20c997);
+                        color: white; 
+                        border-radius: 25px; 
+                        font-weight: bold; 
+                        text-transform: uppercase; 
+                        font-size: 16px; 
+                        letter-spacing: 1px;
+                        box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
+                    }
+                    .message { 
+                        font-size: 18px; 
+                        color: #333; 
+                        text-align: center; 
+                        margin: 25px 0;
+                        line-height: 1.8;
+                    }
+                    .order-info {
+                        background: #f8f9fa;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin: 25px 0;
+                        border-left: 4px solid #ff6b35;
+                    }
+                    .thank-you {
+                        text-align: center;
+                        font-size: 16px;
+                        color: #666;
+                        margin: 30px 0;
+                        padding: 20px;
+                        background: linear-gradient(135deg, #fff5f5, #fff0e6);
+                        border-radius: 8px;
+                    }
+                    .footer { 
+                        background: #2c3e50;
+                        color: #ecf0f1;
+                        text-align: center; 
+                        padding: 25px 20px;
+                        font-size: 14px;
+                    }
+                    .footer-logo {
+                        font-size: 20px;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                        color: #ff6b35;
+                    }
+                    .social-links {
+                        margin: 15px 0;
+                    }
+                    .social-links a {
+                        color: #ff6b35;
+                        text-decoration: none;
+                        margin: 0 10px;
+                        font-weight: 500;
+                    }
+                    @media (max-width: 600px) {
+                        .container { margin: 10px; }
+                        .content { padding: 20px; }
+                        .header { padding: 20px; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="logo">
+                            🍽️ CampusBites
+                        </div>
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 300;">Order Status Update</h1>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="message">
+                            Great news! We have an update on your order.
+                        </div>
+                        
+                        <div class="status-update">
+                            <p style="font-size: 16px; color: #666; margin-bottom: 15px;">
+                                Your order status has been updated to:
+                            </p>
+                            <div class="status-badge">${status}</div>
+                        </div>
+                        
+                        <div class="order-info">
+                            <h3 style="margin: 0 0 10px 0; color: #333;">📋 Order Details</h3>
+                            <p style="margin: 5px 0; color: #666;">
+                                <strong>Order ID:</strong> #${order._id}<br>
+                                 <strong>Status:</strong> ${status}<br>
+                                <strong>Updated:</strong> ${new Date().toLocaleString()}
+                            </p>
+                        </div>
+                        
+                        <div class="thank-you">
+                            <h3 style="margin: 0 0 10px 0; color: #ff6b35;">🙏 Thank You!</h3>
+                            <p style="margin: 0; color: #666;">
+                                Thank you for choosing CampusBites. We appreciate your business and hope you enjoy your meal!
+                            </p>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <p style="color: #666; font-size: 14px;">
+                                Need help? Contact our support team at 
+                                <a href="mailto:support@CampusBites.com" style="color: #ff6b35; text-decoration: none;">support@CampusBites.com</a>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        <div class="footer-logo">CampusBites</div>
+                        <p style="margin: 10px 0;">Delivering happiness to your doorstep</p>
+                        <div class="social-links">
+                            <a href="#">Privacy Policy</a> | 
+                            <a href="#">Terms of Service</a> | 
+                            <a href="#">Contact Us</a>
+                        </div>
+                        <p style="font-size: 12px; color: #95a5a6; margin: 15px 0 0 0;">
+                            This is an automated message. Please do not reply to this email.<br>
+                            © 2025 CampusBites. All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            `;
+
+            await sendEmail(
+                email,
+                htmlEmailTemplate,
+                "Order Status Update - CampusBites",
+            );
+        }
         await order.save();
         return res.status(200).json({
             success: true,
@@ -232,9 +415,15 @@ export const searchRestaurant = async (req: Request, res: Response) => {
 export const getSingleRestaurant = async (req: Request, res: Response) => {
     try {
         const restaurantId = req.params.id;
-        const restaurant = await Restaurant.findById(restaurantId).populate({
+        const { email } = req.body;
+        let restaurant = await Restaurant.findById(restaurantId).populate({
             path: 'menus',
         });
+        if (!restaurant) {
+            restaurant = await Restaurant.findOne({ user: email }).populate({
+                'path': 'menus',
+            });
+        }
         if (!restaurant) {
             return res.status(404).json({
                 success: false,

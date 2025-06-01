@@ -96,3 +96,20 @@ export const sendResetSuccessEmail = async (email: string) => {
         throw new Error("Failed to send password reset success email");
     }
 };
+
+export const sendEmail = async (email: string, htmlContent: string, subject: string) => {
+    try {
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: subject,
+            html: htmlContent
+        };
+
+        const result = await transporter.sendMail(mailOptions);
+        console.log(subject, result.messageId);
+    } catch (error) {
+        console.log(error);
+    }
+};
