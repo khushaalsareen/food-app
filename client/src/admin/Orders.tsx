@@ -99,8 +99,7 @@ const Orders = () => {
                         "Pending",
                         "Confirmed",
                         "Preparing",
-                        "OutForDelivery",
-                        "Delivered",
+                        "Done"
                       ].map((status, index) => (
                         <SelectItem key={index} value={status.toLowerCase()}>
                           {status}
