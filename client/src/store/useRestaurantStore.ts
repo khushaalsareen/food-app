@@ -137,6 +137,7 @@ export const useRestaurantStore = create<RestaurantState>()(persist((set, get) =
     },
     getSingleRestaurant: async (restaurantId: string) => {
         try {
+            console.log("Fetching single restaurant with ID:", restaurantId);
             const response = await axios.get(`${API_END_POINT}/${restaurantId}`);
             if (response.data.success) {
                 console.log(response.data);

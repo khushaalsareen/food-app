@@ -193,7 +193,6 @@ const MobileNavbar = () => {
             <User />
             <span>Profile</span>
           </Link> */}
-
           <Link
             to="/order/status"
             className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
@@ -201,13 +200,15 @@ const MobileNavbar = () => {
             <HandPlatter />
             <span>Order</span>
           </Link>
-          <Link
-            to="/cart"
-            className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
-          >
-            <ShoppingCart />
-            <span>Cart ({0})</span>
-          </Link>
+          {user?.role === "user" && (
+            <Link
+              to="/cart"
+              className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
+            >
+              <ShoppingCart />
+              <span>Cart ({0})</span>
+            </Link>
+          )}
           {user?.role === "admin" && (
             <>
               <Link
@@ -224,6 +225,7 @@ const MobileNavbar = () => {
                 <UtensilsCrossed />
                 <span>Restaurant</span>
               </Link>
+
               <Link
                 to="/restaurants"
                 className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
