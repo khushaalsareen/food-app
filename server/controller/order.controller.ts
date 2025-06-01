@@ -244,13 +244,6 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
                 message: "Restaurant not found."
             })
         };
-        // const order: any = new Order({
-        //     restaurant: restaurant._id,
-        //     user: req.id,
-        //     deliveryDetails: checkoutSessionRequest.deliveryDetails,
-        //     cartItems: checkoutSessionRequest.cartItems,
-        //     status: "pending"
-        // });
 
         //  get order restaurant and user
         const order = await Order.findOne({
@@ -288,7 +281,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
         }
         // Update order with session details
         order.status = "pending";
-        order.totalAmount = session.amount_total ? session.amount_total / 100 : 0; // Convert to rupees
+        order.totalAmount = session.amount_total ? session.amount_total / 100 : 0;
 
         order.deliveryDetails = checkoutSessionRequest.deliveryDetails;
 

@@ -49,7 +49,7 @@ const Orders = () => {
               </p>
               <p className="text-gray-600 dark:text-gray-400 mb-1">
                 <span className="font-semibold">Total Amount:</span> ₹
-                {order.totalAmount / 100 || 0}
+                {order.totalAmount || 0}
               </p>
               <p className="text-gray-600 dark:text-gray-400 mb-1">
                 <span className="font-semibold">Order Placed At:</span>{" "}
