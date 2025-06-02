@@ -70,7 +70,7 @@ const orderSchema = new mongoose.Schema<IOrder>({
     totalAmount: Number,
     status: {
         type: String,
-        enum: ["pending", "confirmed", "preparing", "outfordelivery", "delivered", "failed", "cancelled", "cart"],
+        enum: ["pending", "confirmed", "preparing", "done", "failed", "cancelled", "cart"],
         required: true
     }
 
