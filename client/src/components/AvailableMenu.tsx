@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardFooter } from "./ui/card";
 import { useCartStore } from "@/context/CartProvider"; // Use the hook here
 import { useUserStore } from "@/store/useUserStore";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 const AvailableMenu = ({
   menus,
