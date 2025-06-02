@@ -409,9 +409,6 @@ export const searchRestaurant = async (req: Request, res: Response) => {
     }
 }
 
-
-
-
 export const getSingleRestaurant = async (req: Request, res: Response) => {
     try {
         const restaurantId = req.params.id;

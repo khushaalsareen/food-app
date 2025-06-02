@@ -319,30 +319,77 @@ export const stripeWebhook = async (req: Request, res: Response) => {
         return res.status(400).send(`Webhook error: ${error.message}`);
     }
 
-    // Handle the checkout session completed event
-    if (event.type === "checkout.session.completed") {
-        try {
-            const session = event.data.object as Stripe.Checkout.Session;
-            const order = await Order.findById(session.metadata?.orderId);
-            console.log("Order ID:", session.metadata);
-            console.log("Session Amount Total:", session);
-            if (!order) {
-                return res.status(404).json({ message: "Order not found" });
-            }
+    // // Handle the checkout session completed event
+    // if (event.type === "checkout.session.completed") {
+    //     try {
+    //         console.log("Handling checkout.session.completed event");
+    //         const session = event.data.object as Stripe.Checkout.Session;
+    //         const order = await Order.findById(session.metadata?.orderId);
+    //         console.log("Order ID:", session.metadata);
+    //         console.log("Session Amount Total:", session);
+    //         if (!order) {
+    //             return res.status(404).json({ message: "Order not found" });
+    //         }
 
-            // Update the order with the amount and status
-            if (session.amount_total) {
-                order.totalAmount = session.amount_total;
-            }
-            order.status = "confirmed";
+    //         // Update the order with the amount and status
+    //         if (session.amount_total) {
+    //             order.totalAmount = session.amount_total / 100;
+    //         }
+    //         order.status = "paymentdone";
 
-            await order.save();
-        } catch (error) {
-            console.error('Error handling event:', error);
-            return res.status(500).json({ message: "Internal Server Error" });
-        }
+    //         await order.save();
+    //     } catch (error) {
+    //         console.error('Error handling event:', error);
+    //         return res.status(500).json({ message: "Internal Server Error" });
+    //     }
+    // }
+    console.log(`Received event: ${event.type}`);
+    switch (event.type) {
+        case "checkout.session.completed":
+            try {
+                console.log("✅ Handling checkout.session.completed event");
+                const session = event.data.object as Stripe.Checkout.Session;
+                const order = await Order.findById(session.metadata?.orderId);
+
+                if (!order) {
+                    return res.status(404).json({ message: "Order not found" });
+                }
+
+                if (session.amount_total) {
+                    order.totalAmount = session.amount_total / 100;
+                }
+
+                order.status = "paymentdone";
+                await order.save();
+            } catch (error) {
+                console.error('Error handling success event:', error);
+                return res.status(500).json({ message: "Internal Server Error" });
+            }
+            break;
+
+        case "checkout.session.async_payment_failed":
+        case "payment_intent.payment_failed":
+            try {
+                console.log("Handling payment failure event");
+                const session = event.data.object as Stripe.Checkout.Session;
+                const orderId = session.metadata?.orderId;
+                const order = await Order.findById(orderId);
+
+                if (!order) {
+                    return res.status(404).json({ message: "Order not found" });
+                }
+
+                order.status = "paymentfailed";
+                await order.save();
+            } catch (error) {
+                console.error('Error handling failure event:', error);
+                return res.status(500).json({ message: "Internal Server Error" });
+            }
+            break;
+
+        default:
+            console.log(`Unhandled event type: ${event.type}`);
     }
-
     // Send a 200 response to acknowledge receipt of the event
     res.status(200).send();
 };
